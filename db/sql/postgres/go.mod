@@ -5,7 +5,7 @@ go 1.17
 require gorm.io/driver/postgres v1.3.7
 
 require (
-	github.com/evenyosua18/ego v0.0.0-20220701095315-46777dfe0598 // indirect
+	github.com/evenyosua18/ego v0.0.0-20220701102425-ee69ad3841f8 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
