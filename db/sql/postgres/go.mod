@@ -2,12 +2,10 @@ module ego/db/sql/postgres
 
 go 1.17
 
-require (
-	gorm.io/driver/postgres v1.3.7
-	gorm.io/gorm v1.23.7
-)
+require gorm.io/driver/postgres v1.3.7
 
 require (
+	github.com/evenyosua18/ego v0.0.0-20220701095315-46777dfe0598 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -20,4 +18,5 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	gorm.io/gorm v1.23.7 // indirect
 )
