@@ -110,3 +110,7 @@ func GetUint32(key string) uint32 {
 func GetUint64(key string) uint64 {
 	return viper.GetUint64(key)
 }
+
+func IsParentKeyExists(key string) bool {
+	return viper.Sub(key) != nil
+}
