@@ -2,38 +2,27 @@ package app
 
 import (
 	"github.com/evenyosua18/ego/config"
-	"github.com/gofiber/fiber/v3"
+	"github.com/evenyosua18/ego/router"
 )
 
-type RouteHandler func(app *App)
-
-type App struct {
-	app *fiber.App
-	cfg *Config
+type app struct {
+	router *router.Router
+	cfg    *Config
 }
 
-func Run(handler RouteHandler) {
-	//  get config
-	config.GetConfig()
-
-	// map config
-	cfg := BuildConfiguration()
-
-	// route
-	fiberApp := fiber.New()
-
+func (a *app) RunRest() {
 	// db connection
 
-	// create app
-	app := &App{
-		app: fiberApp,
-		cfg: cfg,
-	}
+	// get router
+	a.router = router.NewRouter()
 
-	// run handler
-	handler(app)
+	// listen
+	a.router.Listen(a.cfg.ServiceConfig.Port)
+}
 
-	if err := fiberApp.Listen(cfg.ServiceConfig.Port); err != nil {
-		panic(err)
-	}
+func GetApp() IApp {
+	//  init config
+	config.GetConfig()
+
+	return &app{cfg: BuildConfiguration()}
 }
