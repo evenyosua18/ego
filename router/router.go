@@ -21,10 +21,8 @@ func NewRouter() *Router {
 	return router
 }
 
-func (r *Router) Listen(port string) {
-	if err := r.app.(*fiber.App).Listen(port); err != nil {
-		panic(err)
-	}
+func (r *Router) Listen(port string) error {
+	return r.app.(*fiber.App).Listen(port)
 }
 
 func (r *Router) wrap(handler RouteHandler) fiber.Handler {

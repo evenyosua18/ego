@@ -10,6 +10,7 @@ type IRouter interface {
 	Patch(path string, handler RouteHandler)
 
 	Group(prefix string) IRouter
+	Listen(port string) error
 }
 
 type Context interface {

@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"strings"
+	"sync"
 )
 
 const (
@@ -15,10 +16,112 @@ const (
 	DirectoryConfigPath = "CONFIG_PATH"
 	DirectoryConfigRoot = "CONFIG_ROOT"
 
+	ServiceName        = "service.name"
+	ServicePort        = "service.port"
+	ServiceEnv         = "service.env"
+	DefaultServiceName = "local"
+	DefaultServicePort = ":8080"
+	DefaultServiceEnv  = "dev"
+
 	DefaultConfigPath = "./config"
 )
 
-func GetConfig() {
+var (
+	once     sync.Once
+	instance *Config
+)
+
+type Config struct {
+	ServiceConfig *Service
+
+	v *viper.Viper
+}
+
+type Service struct {
+	Name string
+	Port string
+	Env  string
+}
+
+func GetConfig() *Config {
+	once.Do(func() {
+		instance = &Config{v: viper.New()}
+		if err := instance.init(); err != nil {
+			panic(fmt.Errorf("error initializing config: %v", err))
+		}
+		instance.build()
+	})
+
+	return instance
+}
+
+// mirroring viper function
+
+func (c *Config) GetString(key string) string {
+	return c.v.GetString(key)
+}
+
+func (c *Config) GetInt(key string) int {
+	return c.v.GetInt(key)
+}
+
+func (c *Config) GetBool(key string) bool {
+	return c.v.GetBool(key)
+}
+
+func (c *Config) Get(key string) any {
+	return c.v.Get(key)
+}
+
+func (c *Config) GetStringSlice(key string) []string {
+	return c.v.GetStringSlice(key)
+}
+
+func (c *Config) GetIntSlice(key string) []int {
+	return c.v.GetIntSlice(key)
+}
+
+func (c *Config) GetInt32(key string) int32 {
+	return c.v.GetInt32(key)
+}
+
+func (c *Config) GetInt64(key string) int64 {
+	return c.v.GetInt64(key)
+}
+
+func (c *Config) GetStringMapStringSlice(key string) map[string][]string {
+	return c.v.GetStringMapStringSlice(key)
+}
+
+func (c *Config) GetFloat64(key string) float64 {
+	return c.v.GetFloat64(key)
+}
+
+func (c *Config) GetStringMap(key string) map[string]any {
+	return c.v.GetStringMap(key)
+}
+
+func (c *Config) GetStringMapString(key string) map[string]string {
+	return c.v.GetStringMapString(key)
+}
+
+func (c *Config) GetUint(key string) uint {
+	return c.v.GetUint(key)
+}
+
+func (c *Config) GetUint32(key string) uint32 {
+	return c.v.GetUint32(key)
+}
+
+func (c *Config) GetUint64(key string) uint64 {
+	return c.v.GetUint64(key)
+}
+
+func (c *Config) IsParentKeyExists(key string) bool {
+	return c.v.Sub(key) != nil
+}
+
+func (c *Config) init() error {
 	// get path
 	path := os.Getenv(DirectoryConfigPath)
 	root := os.Getenv(DirectoryConfigRoot)
@@ -38,79 +141,37 @@ func GetConfig() {
 		path += "/" + dir
 	}
 
-	viper.AddConfigPath(path)
-	viper.SetConfigName(FileName)
-	viper.SetConfigType(FileType)
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	c.v.AddConfigPath(path)
+	c.v.SetConfigName(FileName)
+	c.v.SetConfigType(FileType)
+	c.v.AutomaticEnv()
+	c.v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("error reading config file: %v", err))
+	return c.v.ReadInConfig()
+}
+
+func (c *Config) build() {
+	// setup service configuration
+	c.ServiceConfig = &Service{
+		Name: c.getOrDefault(ServiceName, DefaultServiceName),
+		Port: normalizePort(c.getOrDefault(ServicePort, DefaultServicePort)),
+		Env:  c.getOrDefault(ServiceEnv, DefaultServiceEnv),
 	}
+
+	return
 }
 
-// mirroring viper function
-
-func GetString(key string) string {
-	return viper.GetString(key)
+func (c *Config) getOrDefault(key string, defaultVal string) string {
+	val := c.v.GetString(key)
+	if val == "" {
+		return defaultVal
+	}
+	return val
 }
 
-func GetInt(key string) int {
-	return viper.GetInt(key)
-}
-
-func GetBool(key string) bool {
-	return viper.GetBool(key)
-}
-
-func Get(key string) any {
-	return viper.Get(key)
-}
-
-func GetStringSlice(key string) []string {
-	return viper.GetStringSlice(key)
-}
-
-func GetIntSlice(key string) []int {
-	return viper.GetIntSlice(key)
-}
-
-func GetInt32(key string) int32 {
-	return viper.GetInt32(key)
-}
-
-func GetInt64(key string) int64 {
-	return viper.GetInt64(key)
-}
-
-func GetStringMapStringSlice(key string) map[string][]string {
-	return viper.GetStringMapStringSlice(key)
-}
-
-func GetFloat64(key string) float64 {
-	return viper.GetFloat64(key)
-}
-
-func GetStringMap(key string) map[string]any {
-	return viper.GetStringMap(key)
-}
-
-func GetStringMapString(key string) map[string]string {
-	return viper.GetStringMapString(key)
-}
-
-func GetUint(key string) uint {
-	return viper.GetUint(key)
-}
-
-func GetUint32(key string) uint32 {
-	return viper.GetUint32(key)
-}
-
-func GetUint64(key string) uint64 {
-	return viper.GetUint64(key)
-}
-
-func IsParentKeyExists(key string) bool {
-	return viper.Sub(key) != nil
+func normalizePort(port string) string {
+	if !strings.HasPrefix(port, ":") {
+		return ":" + port
+	}
+	return port
 }

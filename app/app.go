@@ -6,8 +6,7 @@ import (
 )
 
 type app struct {
-	router *router.Router
-	cfg    *Config
+	router router.IRouter
 }
 
 func (a *app) RunRest() {
@@ -17,12 +16,11 @@ func (a *app) RunRest() {
 	a.router = router.NewRouter()
 
 	// listen
-	a.router.Listen(a.cfg.ServiceConfig.Port)
+	if err := a.router.Listen(config.GetConfig().ServiceConfig.Port); err != nil {
+		panic(err)
+	}
 }
 
 func GetApp() IApp {
-	//  init config
-	config.GetConfig()
-
-	return &app{cfg: BuildConfiguration()}
+	return &app{}
 }
