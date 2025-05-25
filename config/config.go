@@ -58,6 +58,10 @@ func GetConfig() *Config {
 
 // mirroring viper function
 
+func (c *Config) Get(key string) any {
+	return c.v.Get(key)
+}
+
 func (c *Config) GetString(key string) string {
 	return c.v.GetString(key)
 }
@@ -68,10 +72,6 @@ func (c *Config) GetInt(key string) int {
 
 func (c *Config) GetBool(key string) bool {
 	return c.v.GetBool(key)
-}
-
-func (c *Config) Get(key string) any {
-	return c.v.Get(key)
 }
 
 func (c *Config) GetStringSlice(key string) []string {
