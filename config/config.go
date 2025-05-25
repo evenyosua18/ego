@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -130,7 +131,7 @@ func (c *Config) init() error {
 		path = DefaultConfigPath
 	} else if root != "" {
 		path = root
-	} else {
+	} else if !filepath.IsAbs(path) {
 		path = "./" + path
 	}
 
