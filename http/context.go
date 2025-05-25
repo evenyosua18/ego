@@ -1,4 +1,4 @@
-package router
+package http
 
 import "github.com/gofiber/fiber/v3"
 

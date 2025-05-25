@@ -2,21 +2,21 @@ package app
 
 import (
 	"github.com/evenyosua18/ego/config"
-	"github.com/evenyosua18/ego/router"
+	"github.com/evenyosua18/ego/http"
 )
 
 type app struct {
-	router router.IRouter
+	httpRouter http.IHttpRouter
 }
 
 func (a *app) RunRest() {
 	// db connection
 
 	// get router
-	a.router = router.NewRouter()
+	a.httpRouter = http.NewRouter()
 
 	// listen
-	if err := a.router.Listen(config.GetConfig().ServiceConfig.Port); err != nil {
+	if err := a.httpRouter.Listen(config.GetConfig().ServiceConfig.Port); err != nil {
 		panic(err)
 	}
 }

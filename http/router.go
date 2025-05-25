@@ -1,4 +1,4 @@
-package router
+package http
 
 import "github.com/gofiber/fiber/v3"
 
@@ -31,26 +31,26 @@ func (r *Router) wrap(handler RouteHandler) fiber.Handler {
 	}
 }
 
-func (r *Router) Get(path string, h RouteHandler) {
+func (r *Router) Get(path string, h RouteHandler, opts ...RouterFuncOption) {
 	r.app.Get(path, r.wrap(h))
 }
 
-func (r *Router) Post(path string, h RouteHandler) {
+func (r *Router) Post(path string, h RouteHandler, opts ...RouterFuncOption) {
 	r.app.Post(path, r.wrap(h))
 }
 
-func (r *Router) Put(path string, h RouteHandler) {
+func (r *Router) Put(path string, h RouteHandler, opts ...RouterFuncOption) {
 	r.app.Put(path, r.wrap(h))
 }
 
-func (r *Router) Delete(path string, h RouteHandler) {
+func (r *Router) Delete(path string, h RouteHandler, opts ...RouterFuncOption) {
 	r.app.Delete(path, r.wrap(h))
 }
 
-func (r *Router) Patch(path string, h RouteHandler) {
+func (r *Router) Patch(path string, h RouteHandler, opts ...RouterFuncOption) {
 	r.app.Patch(path, r.wrap(h))
 }
 
-func (r *Router) Group(prefix string) IRouter {
+func (r *Router) Group(prefix string) IHttpRouter {
 	return &Router{app: r.app.Group(prefix)}
 }

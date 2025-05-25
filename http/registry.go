@@ -1,4 +1,4 @@
-package router
+package http
 
 import "sort"
 
@@ -7,22 +7,22 @@ var (
 )
 
 type (
-	RouteFunc func(router IRouter)
+	RouteFunc func(router IHttpRouter)
 )
 
 func RegisterRouteByGroup(group string, routeFns []RouteFunc) {
-	registerGroup := func(group string, fn func(IRouter)) {
+	registerGroup := func(group string, fn func(IHttpRouter)) {
 		groupRegistry[group] = fn
 	}
 
-	registerGroup(group, func(r IRouter) {
+	registerGroup(group, func(r IHttpRouter) {
 		for _, fn := range routeFns {
 			fn(r)
 		}
 	})
 }
 
-func RegisterRoutes(r IRouter) {
+func RegisterRoutes(r IHttpRouter) {
 	// always register public routes first if available
 	if fn, ok := groupRegistry["public"]; ok {
 		fn(r.Group("/"))
