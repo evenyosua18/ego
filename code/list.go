@@ -83,7 +83,7 @@ func init() {
 	}
 }
 
-func LoadCode(path string) {
+func LoadCodes(path string) error {
 	//read file
 	f, err := os.ReadFile(path)
 
@@ -97,7 +97,7 @@ func LoadCode(path string) {
 
 	//unmarshal yaml file
 	if err = yaml.Unmarshal(f, &e); err != nil {
-		panic(err)
+		return err
 	}
 
 	//save to map
@@ -107,6 +107,8 @@ func LoadCode(path string) {
 
 	// TODO replace to internal log
 	log.Printf("success register %d codes", len(e.Codes))
+
+	return nil
 }
 
 func AddCustomCode(code Code) {
