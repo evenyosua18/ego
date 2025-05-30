@@ -87,14 +87,14 @@ func TestRegisterRoutes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var calls []string
-			mock := &MockRouter{Calls: &calls}
+			mockHttpRouter := &HttpRouter{Calls: &calls}
 			tt.setup()
-			RegisterRoutes(mock)
+			RegisterRoutes(mockHttpRouter)
 
-			got := append([]string(nil), *mock.Calls...)
+			got := append([]string(nil), *mockHttpRouter.Calls...)
 
 			if !reflect.DeepEqual(got, tt.expectedLogs) {
-				t.Errorf("unexpected router calls.\ngot:  %#v\nwant: %#v", mock.Calls, tt.expectedLogs)
+				t.Errorf("unexpected router calls.\ngot:  %#v\nwant: %#v", mockHttpRouter.Calls, tt.expectedLogs)
 			}
 		})
 	}

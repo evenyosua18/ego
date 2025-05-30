@@ -17,43 +17,50 @@ const (
 	DirectoryConfigPath = "CONFIG_PATH"
 	DirectoryConfigRoot = "CONFIG_ROOT"
 
-	ServiceName        = "service.name"
-	ServicePort        = "service.port"
-	ServiceEnv         = "service.env"
-	DefaultServiceName = "local"
-	DefaultServicePort = ":8080"
-	DefaultServiceEnv  = "dev"
-
 	DefaultConfigPath = "./config"
 )
 
 var (
-	once     sync.Once
+	mu       sync.Mutex
 	instance *Config
 )
 
 type Config struct {
-	ServiceConfig *Service
-
 	v *viper.Viper
 }
 
-type Service struct {
-	Name string
-	Port string
-	Env  string
-}
-
 func GetConfig() *Config {
-	once.Do(func() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if instance == nil {
 		instance = &Config{v: viper.New()}
 		if err := instance.init(); err != nil {
 			panic(fmt.Errorf("error initializing config: %v", err))
 		}
-		instance.build()
-	})
+	}
 
 	return instance
+}
+
+func SetTestConfig(injectedValues map[string]any) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	// reset instance
+	instance = nil
+
+	// new viper
+	v := viper.New()
+
+	// loop for inject key value
+	if injectedValues != nil {
+		for key, value := range injectedValues {
+			v.Set(key, value)
+		}
+	}
+
+	instance = &Config{v: v}
 }
 
 // mirroring viper function
@@ -149,30 +156,4 @@ func (c *Config) init() error {
 	c.v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	return c.v.ReadInConfig()
-}
-
-func (c *Config) build() {
-	// setup service configuration
-	c.ServiceConfig = &Service{
-		Name: c.getOrDefault(ServiceName, DefaultServiceName),
-		Port: normalizePort(c.getOrDefault(ServicePort, DefaultServicePort)),
-		Env:  c.getOrDefault(ServiceEnv, DefaultServiceEnv),
-	}
-
-	return
-}
-
-func (c *Config) getOrDefault(key string, defaultVal string) string {
-	val := c.v.GetString(key)
-	if val == "" {
-		return defaultVal
-	}
-	return val
-}
-
-func normalizePort(port string) string {
-	if !strings.HasPrefix(port, ":") {
-		return ":" + port
-	}
-	return port
 }
