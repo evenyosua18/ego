@@ -42,8 +42,8 @@ func Test_normalizePort(t *testing.T) {
 
 func TestConfig_build(t *testing.T) {
 	type fields struct {
-		ServiceConfig *Service
-		v             *viper.Viper
+		AppConfig *App
+		v         *viper.Viper
 	}
 	tests := []struct {
 		name         string
@@ -55,7 +55,7 @@ func TestConfig_build(t *testing.T) {
 		{
 			name: "build config, all values filled",
 			fields: fields{
-				ServiceConfig: &Service{},
+				AppConfig: &App{},
 			},
 			setVals: map[string]any{
 				ServiceName: "test-name",
@@ -63,7 +63,7 @@ func TestConfig_build(t *testing.T) {
 				ServicePort: ":8080",
 			},
 			expectedConf: Config{
-				ServiceConfig: &Service{
+				AppConfig: &App{
 					Name: "test-name",
 					Port: ":8080",
 					Env:  "test-env",
@@ -73,12 +73,12 @@ func TestConfig_build(t *testing.T) {
 		{
 			name: "build config, use default value",
 			fields: fields{
-				ServiceConfig: &Service{},
-				v:             viper.New(),
+				AppConfig: &App{},
+				v:         viper.New(),
 			},
 			setVals: nil,
 			expectedConf: Config{
-				ServiceConfig: &Service{
+				AppConfig: &App{
 					Name: DefaultServiceName,
 					Port: DefaultServicePort,
 					Env:  DefaultServiceEnv,
@@ -91,14 +91,14 @@ func TestConfig_build(t *testing.T) {
 			config.SetTestConfig(tt.setVals)
 
 			c := &Config{
-				ServiceConfig: tt.fields.ServiceConfig,
+				AppConfig: tt.fields.AppConfig,
 			}
 
 			c.build()
 
 			// expected service config
-			if !reflect.DeepEqual(c.ServiceConfig, tt.expectedConf.ServiceConfig) {
-				t.Errorf("ServiceConfig mismatch: got %+v, want %+v", c.ServiceConfig, tt.expectedConf.ServiceConfig)
+			if !reflect.DeepEqual(c.AppConfig, tt.expectedConf.AppConfig) {
+				t.Errorf("ServiceConfig mismatch: got %+v, want %+v", c.AppConfig, tt.expectedConf.AppConfig)
 			}
 
 			// NOTE: add here if there are new configs

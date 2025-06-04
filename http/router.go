@@ -1,6 +1,9 @@
 package http
 
-import "github.com/gofiber/fiber/v3"
+import (
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+)
 
 type Router struct {
 	app fiber.Router
@@ -9,6 +12,12 @@ type Router struct {
 func NewRouter() *Router {
 	// route
 	fiberApp := fiber.New()
+
+	// set log middleware
+	fiberApp.Use(logger.New(logger.Config{
+		Format:     "${time} - ${method} ${path} [${status}] ${latency}\n",
+		TimeFormat: "2006/01/02 15:04:05",
+	}))
 
 	// set router
 	router := &Router{

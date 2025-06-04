@@ -1,5 +1,7 @@
 package http
 
+import "context"
+
 type RouteHandler func(ctx Context) error
 
 type IHttpRouter interface {
@@ -19,4 +21,7 @@ type Context interface {
 	Body() []byte
 	Send(int, []byte) error
 	JSON(int, any) error
+	Context() context.Context
+	ResponseError(err error) error
+	ResponseSuccess(data any) error
 }
