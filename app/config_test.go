@@ -59,14 +59,14 @@ func TestConfig_build(t *testing.T) {
 			},
 			setVals: map[string]any{
 				ServiceName: "test-name",
-				ServiceEnv:  "test-env",
+				ServiceEnv:  "local",
 				ServicePort: ":8080",
 			},
 			expectedConf: Config{
 				AppConfig: &App{
 					Name: "test-name",
 					Port: ":8080",
-					Env:  "test-env",
+					Env:  "local",
 				},
 			},
 		},
@@ -76,12 +76,14 @@ func TestConfig_build(t *testing.T) {
 				AppConfig: &App{},
 				v:         viper.New(),
 			},
-			setVals: nil,
+			setVals: map[string]any{
+				ServiceEnv: "local",
+			},
 			expectedConf: Config{
 				AppConfig: &App{
 					Name: DefaultServiceName,
 					Port: DefaultServicePort,
-					Env:  DefaultServiceEnv,
+					Env:  "local",
 				},
 			},
 		},
