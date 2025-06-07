@@ -1,0 +1,26 @@
+[service]
+name = "your-service-name"  # can be empty, default temporary-service
+env = "your-env" # can be empty, default local
+port = "your-service-port" # can be empty, default 8080
+
+[database]
+driver = "" # can be empty, default mysql
+name = "your-database-name" # if empty, then no run db connection
+host = "" # can be empty, default localhost
+port = "" # can be empty, default 3306
+password = "" # can be empty, no default value and if env not 'local', will return panic
+protocol = "" # can be empty, default tcp
+user = "" # can be empty, default root
+params = "" # can be empty
+max_open_conns = "" # can be empty, default 100
+max_idle_conns = "" # can be empty, default 20
+conn_max_lifetime = "" # can be empty, default 30m
+conn_max_idle_time = "" # can be empty, default 5m
+
+[code]
+filename = "codes.yaml"
+
+[tracer]
+dsn = "" # add here if want to integrate with sentry
+flush_time = "" # can be empty, default 1 second
+sample_rate = "" # can be empty, default 1.0

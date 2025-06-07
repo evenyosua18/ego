@@ -14,9 +14,9 @@ const (
 	ServicePort = "service.port"
 	ServiceEnv  = "service.env"
 
-	DefaultServiceName = "local"
+	DefaultServiceName = "temporary-service"
 	DefaultServicePort = ":8080"
-	DefaultServiceEnv  = "dev"
+	DefaultServiceEnv  = "local"
 
 	CustomCodeFilePath = "code.filename"
 
@@ -33,7 +33,6 @@ const (
 	DatabaseConnMaxLifetime = "database.conn_max_lifetime"
 	DatabaseConnMaxIdleTime = "database.conn_max_idle_time"
 
-	DefaultDatabaseName            = "app"
 	DefaultDatabasePort            = "3306"
 	DefaultDatabaseDriver          = "mysql"
 	DefaultDatabaseHost            = "localhost"
@@ -117,7 +116,7 @@ func (c *Config) build() {
 		Password:        c.getOrDefault(DatabasePassword, ""),
 		Host:            c.getOrDefault(DatabaseHost, DefaultDatabaseHost),
 		Port:            c.getOrDefault(DatabasePort, DefaultDatabasePort),
-		Name:            c.getOrDefault(DatabaseName, DefaultDatabaseName),
+		Name:            c.getOrDefault(DatabaseName, ""),
 		Protocol:        c.getOrDefault(DatabaseProtocol, DefaultDatabaseProtocol),
 		Params:          c.getOrDefault(DatabaseParams, ""),
 		MaxOpenConns:    c.getOrDefaultInt(DatabaseMaxOpenConns, DefaultDatabaseMaxOpenConns),
