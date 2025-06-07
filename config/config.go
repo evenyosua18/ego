@@ -26,7 +26,8 @@ var (
 )
 
 type Config struct {
-	v *viper.Viper
+	v    *viper.Viper
+	path string
 }
 
 func GetConfig() *Config {
@@ -129,6 +130,10 @@ func (c *Config) IsParentKeyExists(key string) bool {
 	return c.v.Sub(key) != nil
 }
 
+func (c *Config) GetConfigPath() string {
+	return c.path
+}
+
 func (c *Config) init() error {
 	// get path
 	path := os.Getenv(DirectoryConfigPath)
@@ -154,6 +159,8 @@ func (c *Config) init() error {
 	c.v.SetConfigType(FileType)
 	c.v.AutomaticEnv()
 	c.v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	c.path = path
 
 	return c.v.ReadInConfig()
 }

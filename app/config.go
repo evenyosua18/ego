@@ -18,7 +18,7 @@ const (
 	DefaultServicePort = ":8080"
 	DefaultServiceEnv  = "dev"
 
-	CustomCodeFilePath = "code.file_path"
+	CustomCodeFilePath = "code.filename"
 
 	DatabaseName            = "database.name"
 	DatabasePort            = "database.port"
@@ -43,6 +43,13 @@ const (
 	DefaultDatabaseMaxIdleConns    = 20
 	DefaultDatabaseConnMaxLifetime = 30 * time.Minute
 	DefaultDatabaseConnMaxIdleTime = 5 * time.Minute
+
+	TracerDSN        = "tracer.dsn"
+	TracerSampleRate = "tracer.sample_rate"
+	TracerFlushTime  = "tracer.flush_time"
+
+	DefaultTracerSampleRate = 1.0
+	DefaultTracerFlushTime  = "1"
 )
 
 var (
@@ -54,10 +61,11 @@ type (
 		AppConfig      *App
 		CodeConfig     *Code
 		DatabaseConfig *Database
+		TracerConfig   *Tracer
 	}
 
 	Code struct {
-		FilePath string
+		Filename string
 	}
 
 	App struct {
@@ -81,6 +89,12 @@ type (
 		ConnMaxLifetime time.Duration
 		ConnMaxIdleTime time.Duration
 	}
+
+	Tracer struct {
+		DSN        string
+		SampleRate float64
+		FlushTime  string
+	}
 )
 
 func (c *Config) build() {
@@ -93,7 +107,7 @@ func (c *Config) build() {
 
 	// setup code configuration
 	c.CodeConfig = &Code{
-		FilePath: c.getOrDefault(CustomCodeFilePath, ""),
+		Filename: c.getOrDefault(CustomCodeFilePath, ""),
 	}
 
 	// setup db configuration
@@ -115,6 +129,13 @@ func (c *Config) build() {
 	if c.AppConfig.Env != LocalEnv && c.DatabaseConfig.Password == "" {
 		// validate db password can't be empty if not local env
 		panic(ErrEmptyDBPassword)
+	}
+
+	// tracer
+	c.TracerConfig = &Tracer{
+		DSN:        c.getOrDefault(TracerDSN, ""),
+		SampleRate: c.getOrDefaultFloat(TracerSampleRate, DefaultTracerSampleRate),
+		FlushTime:  c.getOrDefault(TracerFlushTime, DefaultTracerFlushTime),
 	}
 
 	return
@@ -155,6 +176,16 @@ func (c *Config) getOrDefaultDuration(key string, defaultVal time.Duration) time
 func (c *Config) getOrDefaultInt(key string, defaultVal int) int {
 	// set value
 	val := config.GetConfig().GetInt(key)
+	if val == 0 {
+		return defaultVal
+	}
+
+	return val
+}
+
+func (c *Config) getOrDefaultFloat(key string, defaultVal float64) float64 {
+	val := config.GetConfig().GetFloat64(key)
+
 	if val == 0 {
 		return defaultVal
 	}

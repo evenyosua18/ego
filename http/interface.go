@@ -24,4 +24,5 @@ type Context interface {
 	Context() context.Context
 	ResponseError(err error) error
 	ResponseSuccess(data any) error
+	HttpData() map[string]any
 }

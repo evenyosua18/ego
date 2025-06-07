@@ -2,8 +2,10 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/evenyosua18/ego/code"
 	"github.com/gofiber/fiber/v3"
+	"strings"
 )
 
 type fiberContext struct {
@@ -42,4 +44,57 @@ func (f *fiberContext) ResponseError(err error) error {
 
 func (f *fiberContext) ResponseSuccess(data any) error {
 	return f.ctx.Status(200).JSON(data)
+}
+
+func (f *fiberContext) HttpData() map[string]any {
+	return map[string]any{
+		"http": map[string]any{
+			"method":     f.ctx.Method(),
+			"path":       f.ctx.Path(),
+			"query":      f.ctx.Queries(),
+			"ip_address": f.ctx.IP(),
+			"body":       truncate(f.ctx.Get("Content-Type"), f.ctx.Body()),
+		},
+		"operation_name": strings.ToUpper(f.ctx.Method()) + " " + f.ctx.Path(),
+	}
+}
+
+const (
+	maxLogLength = 2048
+
+	truncatedText     = "...(truncated)"
+	unableMarshalText = "<<unable to marshal object>>"
+	omittedFileText   = "<<file omitted>>"
+)
+
+func truncate(contentType string, obj any) string {
+	if !strings.HasPrefix(contentType, "application/json") &&
+		!strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
+		return omittedFileText
+	}
+
+	switch v := obj.(type) {
+	case string:
+		if len(v) > maxLogLength {
+			return v[:maxLogLength] + truncatedText
+		}
+		return v
+	case []byte:
+		if len(v) > maxLogLength {
+			return string(v[:maxLogLength]) + truncatedText
+		}
+		return string(v)
+	}
+
+	// Marshal to JSON for structured types
+	jsonBytes, err := json.Marshal(obj)
+	if err != nil {
+		return unableMarshalText
+	}
+
+	if len(jsonBytes) > maxLogLength {
+		return string(jsonBytes[:maxLogLength]) + truncatedText
+	}
+
+	return string(jsonBytes)
 }
