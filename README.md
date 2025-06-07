@@ -11,7 +11,7 @@
 ## Getting Started
 Installation
 ```
-go get github.com/your-org/ego
+go get github.com/evenyosua18/ego
 ```
 
 Run REST Server
