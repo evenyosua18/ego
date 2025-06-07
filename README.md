@@ -9,8 +9,12 @@
 - 📄 **Standardized API Responses**
 
 ## Getting Started
-```go get github.com/your-org/ego```
+Installation
+```
+go get github.com/your-org/ego
+```
 
+Run REST Server
 ```
 import (
 	"github.com/evenyosua18/ego/app"
