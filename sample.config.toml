@@ -1,5 +1,5 @@
 [service]
-name = "your-service-name"  # can be empty, default temporary-service
+name = "your-service-name"  # can be empty, default temporary-service, use to define main prefix in router too
 env = "your-env" # can be empty, default local
 port = "your-service-port" # can be empty, default 8080
 
@@ -24,3 +24,6 @@ filename = "codes.yaml"
 dsn = "" # add here if want to integrate with sentry
 flush_time = "" # can be empty, default 1 second
 sample_rate = "" # can be empty, default 1.0
+
+[router]
+max_limit = 100 # can be empty, default 100, if 0 then will be set no limiter

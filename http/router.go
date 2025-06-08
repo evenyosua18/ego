@@ -1,23 +1,25 @@
 package http
 
 import (
+	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 type Router struct {
 	app fiber.Router
 }
 
-func NewRouter() *Router {
+func NewRouter(cfg RouteConfig) *Router {
 	// route
 	fiberApp := fiber.New()
 
-	// set log middleware
-	fiberApp.Use(logger.New(logger.Config{
-		Format:     "${time} - ${method} ${path} [${status}] ${latency}\n",
-		TimeFormat: "2006/01/02 15:04:05",
-	}))
+	// set middleware
+	fiberApp.Use(middleware.PanicHandler(), middleware.LogHandler())
+
+	// set rate limiter middleware
+	if cfg.MaxLimit != 0 {
+		fiberApp.Use(middleware.RateLimiter(cfg.MaxLimit))
+	}
 
 	// set router
 	router := &Router{
@@ -25,7 +27,7 @@ func NewRouter() *Router {
 	}
 
 	// register routes
-	RegisterRoutes(router)
+	RegisterRoutes(router.Group(cfg.MainPrefix))
 
 	return router
 }

@@ -49,6 +49,11 @@ const (
 
 	DefaultTracerSampleRate = 1.0
 	DefaultTracerFlushTime  = "1"
+
+	RouteMaxLimit = "route.rate_limit"
+	RoutePrefix   = "route.prefix"
+
+	DefaultRouteMaxLimit = 100
 )
 
 var (
@@ -61,6 +66,7 @@ type (
 		CodeConfig     *Code
 		DatabaseConfig *Database
 		TracerConfig   *Tracer
+		RouterConfig   *Router
 	}
 
 	Code struct {
@@ -93,6 +99,11 @@ type (
 		DSN        string
 		SampleRate float64
 		FlushTime  string
+	}
+
+	Router struct {
+		MaxLimit int
+		Prefix   string
 	}
 )
 
@@ -135,6 +146,12 @@ func (c *Config) build() {
 		DSN:        c.getOrDefault(TracerDSN, ""),
 		SampleRate: c.getOrDefaultFloat(TracerSampleRate, DefaultTracerSampleRate),
 		FlushTime:  c.getOrDefault(TracerFlushTime, DefaultTracerFlushTime),
+	}
+
+	// route
+	c.RouterConfig = &Router{
+		MaxLimit: c.getOrDefaultInt(RouteMaxLimit, DefaultRouteMaxLimit),
+		Prefix:   normalizeRoutePrefix(c.getOrDefault(RoutePrefix, "")),
 	}
 
 	return
@@ -200,4 +217,12 @@ func (c *Config) getDBUri() string {
 	}
 
 	return dbUri
+}
+
+func normalizeRoutePrefix(prefix string) string {
+	if prefix == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("ms/%s", strings.ReplaceAll(prefix, "-svc", ""))
 }

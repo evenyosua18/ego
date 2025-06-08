@@ -59,7 +59,10 @@ func (a *app) RunRest() {
 	}
 
 	// get router
-	a.httpRouter = http.NewRouter()
+	a.httpRouter = http.NewRouter(http.RouteConfig{
+		MaxLimit:   appConfig.RouterConfig.MaxLimit,
+		MainPrefix: appConfig.AppConfig.Name,
+	})
 
 	// listen
 	if err := a.httpRouter.Listen(appConfig.AppConfig.Port); err != nil {

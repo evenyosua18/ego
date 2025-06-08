@@ -36,6 +36,8 @@ var (
 	DatabaseError     = "database_error"
 	BadRequestError   = "bad_request"
 	UnauthorizedError = "unauthorized"
+	RateLimitError    = "rate_limit_error"
+	PanicError        = "panic_error"
 )
 
 func init() {
@@ -79,6 +81,20 @@ func init() {
 			ErrorMessage:    "unauthorized",
 			HttpCode:        400,
 			GrpcCode:        16,
+		},
+		RateLimitError: {
+			CustomCode:      RateLimitError,
+			ResponseMessage: "too many requests, try again later",
+			ErrorMessage:    "too many requests",
+			HttpCode:        429,
+			GrpcCode:        9,
+		},
+		PanicError: {
+			CustomCode:      PanicError,
+			ResponseMessage: "something went wrong, will be fixed as soon as possible",
+			ErrorMessage:    "error cause by panic",
+			HttpCode:        500,
+			GrpcCode:        13,
 		},
 	}
 }
