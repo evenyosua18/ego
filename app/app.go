@@ -65,7 +65,7 @@ func (a *app) RunRest() {
 	})
 
 	// listen
-	if err := a.httpRouter.Listen(appConfig.AppConfig.Port); err != nil {
+	if err := a.httpRouter.Listen(appConfig.RouterConfig.Port); err != nil {
 		panic(err)
 	}
 }

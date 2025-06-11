@@ -11,11 +11,9 @@ const (
 	LocalEnv = "local" // used for validation: db password can be empty if local env
 
 	ServiceName = "service.name"
-	ServicePort = "service.port"
 	ServiceEnv  = "service.env"
 
 	DefaultServiceName = "temporary-service"
-	DefaultServicePort = ":8080"
 	DefaultServiceEnv  = "local"
 
 	CustomCodeFilePath = "code.filename"
@@ -52,7 +50,9 @@ const (
 
 	RouteMaxLimit = "route.rate_limit"
 	RoutePrefix   = "route.prefix"
+	RoutePort     = "route.port"
 
+	DefaultRoutePort     = ":8080"
 	DefaultRouteMaxLimit = 100
 )
 
@@ -104,6 +104,7 @@ type (
 	Router struct {
 		MaxLimit int
 		Prefix   string
+		Port     string
 	}
 )
 
@@ -111,7 +112,6 @@ func (c *Config) build() {
 	// setup service configuration
 	c.AppConfig = &App{
 		Name: c.getOrDefault(ServiceName, DefaultServiceName),
-		Port: normalizePort(c.getOrDefault(ServicePort, DefaultServicePort)),
 		Env:  c.getOrDefault(ServiceEnv, DefaultServiceEnv),
 	}
 
@@ -152,6 +152,7 @@ func (c *Config) build() {
 	c.RouterConfig = &Router{
 		MaxLimit: c.getOrDefaultInt(RouteMaxLimit, DefaultRouteMaxLimit),
 		Prefix:   normalizeRoutePrefix(c.getOrDefault(RoutePrefix, "")),
+		Port:     normalizePort(c.getOrDefault(RoutePort, DefaultRoutePort)),
 	}
 
 	return

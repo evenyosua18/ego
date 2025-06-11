@@ -60,12 +60,10 @@ func TestConfig_build(t *testing.T) {
 			setVals: map[string]any{
 				ServiceName: "test-name",
 				ServiceEnv:  "local",
-				ServicePort: ":8080",
 			},
 			expectedConf: Config{
 				AppConfig: &App{
 					Name: "test-name",
-					Port: ":8080",
 					Env:  "local",
 				},
 			},
@@ -82,7 +80,6 @@ func TestConfig_build(t *testing.T) {
 			expectedConf: Config{
 				AppConfig: &App{
 					Name: DefaultServiceName,
-					Port: DefaultServicePort,
 					Env:  "local",
 				},
 			},
