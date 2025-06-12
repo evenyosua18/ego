@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/gofiber/fiber/v3"
 )
@@ -28,6 +29,18 @@ func NewRouter(cfg RouteConfig) *Router {
 
 	// register routes
 	RegisterRoutes(router.Group(cfg.MainPrefix))
+
+	// print all registered routes
+	if cfg.ShowRegisteredRoute {
+		fmt.Println("registered routes")
+		for _, routes := range fiberApp.Stack() {
+			for _, route := range routes {
+				if route.Path != "/" {
+					fmt.Printf("%-6s %s\n", route.Method, route.Path)
+				}
+			}
+		}
+	}
 
 	return router
 }

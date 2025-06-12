@@ -48,12 +48,13 @@ const (
 	DefaultTracerSampleRate = 1.0
 	DefaultTracerFlushTime  = "1"
 
-	RouteMaxLimit = "route.rate_limit"
-	RoutePrefix   = "route.prefix"
-	RoutePort     = "route.port"
+	RouterMaxLimit       = "router.rate_limit"
+	RouterPrefix         = "router.prefix"
+	RouterPort           = "router.port"
+	RouterShowRegistered = "router.show_registered"
 
-	DefaultRoutePort     = ":8080"
-	DefaultRouteMaxLimit = 100
+	DefaultRouterPort     = ":8080"
+	DefaultRouterMaxLimit = 100
 )
 
 var (
@@ -102,9 +103,10 @@ type (
 	}
 
 	Router struct {
-		MaxLimit int
-		Prefix   string
-		Port     string
+		MaxLimit       int
+		Prefix         string
+		Port           string
+		ShowRegistered bool
 	}
 )
 
@@ -150,9 +152,10 @@ func (c *Config) build() {
 
 	// route
 	c.RouterConfig = &Router{
-		MaxLimit: c.getOrDefaultInt(RouteMaxLimit, DefaultRouteMaxLimit),
-		Prefix:   normalizeRoutePrefix(c.getOrDefault(RoutePrefix, "")),
-		Port:     normalizePort(c.getOrDefault(RoutePort, DefaultRoutePort)),
+		MaxLimit:       c.getOrDefaultInt(RouterMaxLimit, DefaultRouterMaxLimit),
+		Prefix:         normalizeRoutePrefix(c.getOrDefault(RouterPrefix, "")),
+		Port:           normalizePort(c.getOrDefault(RouterPort, DefaultRouterPort)),
+		ShowRegistered: config.GetConfig().GetBool(RouterShowRegistered), // if not true or 1, will return false, no need to set default value anymore
 	}
 
 	return
@@ -225,5 +228,5 @@ func normalizeRoutePrefix(prefix string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("ms/%s", strings.ReplaceAll(prefix, "-svc", ""))
+	return fmt.Sprintf("%s", strings.ReplaceAll(prefix, "-svc", ""))
 }

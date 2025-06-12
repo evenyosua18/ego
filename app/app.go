@@ -60,8 +60,9 @@ func (a *app) RunRest() {
 
 	// get router
 	a.httpRouter = http.NewRouter(http.RouteConfig{
-		MaxLimit:   appConfig.RouterConfig.MaxLimit,
-		MainPrefix: appConfig.AppConfig.Name,
+		MaxLimit:            appConfig.RouterConfig.MaxLimit,
+		MainPrefix:          appConfig.RouterConfig.Prefix,
+		ShowRegisteredRoute: appConfig.RouterConfig.ShowRegistered,
 	})
 
 	// listen

@@ -1,6 +1,8 @@
 package http
 
-import "sort"
+import (
+	"sort"
+)
 
 var (
 	groupRegistry = make(map[string]RouteFunc)
