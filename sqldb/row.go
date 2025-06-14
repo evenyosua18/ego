@@ -14,12 +14,16 @@ func NewSqlRow(row *sql.Row) ISqlRow {
 	return &SqlRow{row: row}
 }
 
-func (s *SqlRow) Scan(dest ...interface{}) error {
+func (s *SqlRow) Scan(dest ...any) error {
 	err := s.row.Scan(dest...)
 
-	if errors.Is(err, sql.ErrNoRows) {
-		return code.Wrap(err, code.NotFoundError)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return code.Wrap(err, code.NotFoundError)
+		}
+
+		return code.Wrap(err, code.DatabaseError)
 	}
 
-	return code.Wrap(err, code.DatabaseError)
+	return nil
 }

@@ -2,6 +2,7 @@ package sqldb
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/evenyosua18/ego/code"
 	"github.com/georgysavva/scany/v2/dbscan"
 )
@@ -25,17 +26,41 @@ func (s *SqlRows) Next() bool {
 func (s *SqlRows) MapResult(dest ...any) error {
 	err := s.rows.Scan(dest...)
 
-	return code.Wrap(err, code.DatabaseError)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return code.Wrap(err, code.NotFoundError)
+		}
+
+		return code.Wrap(err, code.DatabaseError)
+	}
+
+	return nil
 }
 
 func (s *SqlRows) ScanAll(dest any) error {
 	err := dbscan.ScanAll(dest, s.rows)
 
-	return code.Wrap(err, code.DatabaseError)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return code.Wrap(err, code.NotFoundError)
+		}
+
+		return code.Wrap(err, code.DatabaseError)
+	}
+
+	return nil
 }
 
 func (s *SqlRows) ScanOne(dest any) error {
 	err := dbscan.ScanOne(dest, s.rows)
 
-	return code.Wrap(err, code.DatabaseError)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return code.Wrap(err, code.NotFoundError)
+		}
+
+		return code.Wrap(err, code.DatabaseError)
+	}
+
+	return nil
 }
