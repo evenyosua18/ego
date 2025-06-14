@@ -25,8 +25,8 @@ func Validate(request any) error {
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			return code.Get(code.BadRequestError).
-				SetErrorMessage(fmt.Sprintf("field '%s' failed on the tag %s", e.Field(), e.Tag())).
-				SetMessage(fmt.Sprintf("please check field '%s' again", e.Field()))
+				SetErrorMessage(fmt.Sprintf("field '%s' failed on the tag is '%s'", e.Field(), e.ActualTag())).
+				SetMessage("please check your request data again")
 		}
 	}
 

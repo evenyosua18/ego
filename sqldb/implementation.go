@@ -3,6 +3,7 @@ package sqldb
 import (
 	"context"
 	"fmt"
+	"github.com/evenyosua18/ego/code"
 )
 
 type (
@@ -11,8 +12,8 @@ type (
 )
 
 var (
-	errNoConnection       = fmt.Errorf("no connection found")
-	errNoDB               = fmt.Errorf("no database found")
+	errNoConnection       = code.Get(code.DatabaseError).SetErrorMessage("no connection found")
+	errNoDB               = code.Get(code.DatabaseError).SetErrorMessage("no database found")
 	errDBAlreadyConnected = fmt.Errorf("database already connected")
 )
 
@@ -40,7 +41,7 @@ func BeginTx(ctx context.Context) (ISqlTx, context.Context, error) {
 	tx, err := sqlDb.Begin()
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, code.Wrap(err, code.DatabaseError)
 	}
 
 	// set to context

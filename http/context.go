@@ -24,6 +24,10 @@ func (f *fiberContext) Body() []byte {
 	return f.ctx.Body()
 }
 
+func (f *fiberContext) RequestBody(res any) error {
+	return json.Unmarshal(f.ctx.Body(), &res)
+}
+
 func (f *fiberContext) Send(status int, body []byte) error {
 	return f.ctx.Status(status).Send(body)
 }
@@ -46,17 +50,14 @@ func (f *fiberContext) ResponseSuccess(data any) error {
 	return f.ctx.Status(200).JSON(data)
 }
 
-func (f *fiberContext) HttpData() map[string]any {
+func (f *fiberContext) HttpData() (data map[string]any, operationName string) {
 	return map[string]any{
-		"http": map[string]any{
-			"method":     f.ctx.Method(),
-			"path":       f.ctx.Path(),
-			"query":      f.ctx.Queries(),
-			"ip_address": f.ctx.IP(),
-			"body":       truncate(f.ctx.Get("Content-Type"), f.ctx.Body()),
-		},
-		"operation_name": strings.ToUpper(f.ctx.Method()) + " " + f.ctx.Path(),
-	}
+		"method":     f.ctx.Method(),
+		"path":       f.ctx.Path(),
+		"query":      f.ctx.Queries(),
+		"ip_address": f.ctx.IP(),
+		"body":       truncate(f.ctx.Get("Content-Type"), f.ctx.Body()),
+	}, strings.ToUpper(f.ctx.Method()) + " " + f.ctx.Path()
 }
 
 const (

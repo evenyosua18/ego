@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/evenyosua18/ego/http/middleware"
+	"github.com/evenyosua18/ego/tracer"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -51,7 +52,17 @@ func (r *Router) Listen(port string) error {
 
 func (r *Router) wrap(handler RouteHandler) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		return handler(&fiberContext{ctx: c})
+		// setup context
+		fiberCtx := fiberContext{ctx: c}
+
+		// get http data
+		data, opName := fiberCtx.HttpData()
+
+		// create tracer
+		sp := tracer.StartSpan(c.Context(), opName, tracer.WithAttributes(data))
+		defer sp.End()
+
+		return handler(&fiberCtx)
 	}
 }
 

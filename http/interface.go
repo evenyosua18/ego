@@ -16,13 +16,16 @@ type IHttpRouter interface {
 }
 
 type Context interface {
+	Context() context.Context
 	Param(string) string
 	Query(string) string
 	Body() []byte
+	RequestBody(res any) error
+
 	Send(int, []byte) error
 	JSON(int, any) error
-	Context() context.Context
 	ResponseError(err error) error
 	ResponseSuccess(data any) error
-	HttpData() map[string]any
+
+	HttpData() (map[string]any, string)
 }
