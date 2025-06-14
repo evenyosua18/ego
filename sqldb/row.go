@@ -1,6 +1,10 @@
 package sqldb
 
-import "database/sql"
+import (
+	"database/sql"
+	"github.com/evenyosua18/ego/code"
+	"github.com/pkg/errors"
+)
 
 type SqlRow struct {
 	row *sql.Row
@@ -11,5 +15,11 @@ func NewSqlRow(row *sql.Row) ISqlRow {
 }
 
 func (s *SqlRow) Scan(dest ...interface{}) error {
-	return s.row.Scan(dest...)
+	err := s.row.Scan(dest...)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return code.Wrap(err, code.NotFoundError)
+	}
+
+	return code.Wrap(err, code.DatabaseError)
 }

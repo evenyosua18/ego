@@ -2,6 +2,7 @@ package sqldb
 
 import (
 	"database/sql"
+	"github.com/evenyosua18/ego/code"
 	"github.com/georgysavva/scany/v2/dbscan"
 )
 
@@ -22,13 +23,19 @@ func (s *SqlRows) Next() bool {
 }
 
 func (s *SqlRows) MapResult(dest ...any) error {
-	return s.rows.Scan(dest...)
+	err := s.rows.Scan(dest...)
+
+	return code.Wrap(err, code.DatabaseError)
 }
 
 func (s *SqlRows) ScanAll(dest any) error {
-	return dbscan.ScanAll(dest, s.rows)
+	err := dbscan.ScanAll(dest, s.rows)
+
+	return code.Wrap(err, code.DatabaseError)
 }
 
 func (s *SqlRows) ScanOne(dest any) error {
-	return dbscan.ScanOne(dest, s.rows)
+	err := dbscan.ScanOne(dest, s.rows)
+
+	return code.Wrap(err, code.DatabaseError)
 }
