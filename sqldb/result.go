@@ -16,11 +16,19 @@ func NewSqlResult(result sql.Result) ISqlResult {
 func (s *SqlResult) LastInsertId() (int64, error) {
 	lastInsertedId, err := s.result.LastInsertId()
 
-	return lastInsertedId, code.Wrap(err, code.DatabaseError)
+	if err != nil {
+		err = code.Wrap(err, code.DatabaseError)
+	}
+
+	return lastInsertedId, err
 }
 
 func (s *SqlResult) RowsAffected() (int64, error) {
 	rowsAffected, err := s.result.RowsAffected()
 
-	return rowsAffected, code.Wrap(err, code.DatabaseError)
+	if err != nil {
+		err = code.Wrap(err, code.DatabaseError)
+	}
+
+	return rowsAffected, err
 }

@@ -38,6 +38,7 @@ var (
 	UnauthorizedError = "unauthorized"
 	RateLimitError    = "rate_limit_error"
 	PanicError        = "panic_error"
+	EncryptionError   = "encryption_error"
 )
 
 func init() {
@@ -93,6 +94,13 @@ func init() {
 			CustomCode:      PanicError,
 			ResponseMessage: "something went wrong, will be fixed as soon as possible",
 			ErrorMessage:    "error cause by panic",
+			HttpCode:        500,
+			GrpcCode:        13,
+		},
+		EncryptionError: {
+			CustomCode:      EncryptionError,
+			ResponseMessage: "something went wrong, will be fixed as soon as possible",
+			ErrorMessage:    "error when doing encrypt or decrypt",
 			HttpCode:        500,
 			GrpcCode:        13,
 		},

@@ -2,6 +2,7 @@ package sqldb
 
 import (
 	"database/sql"
+	"github.com/evenyosua18/ego/code"
 	"sync"
 )
 
@@ -23,7 +24,7 @@ func (s *SqlTx) Query(query string, args ...any) (ISqlRows, error) {
 	rows, err := s.tx.Query(query, args...)
 
 	if err != nil {
-		return nil, err
+		return nil, code.Wrap(err, code.DatabaseError)
 	}
 
 	return NewSqlRows(rows), nil
@@ -33,7 +34,7 @@ func (s *SqlTx) Exec(query string, args ...any) (ISqlResult, error) {
 	rows, err := s.tx.Exec(query, args...)
 
 	if err != nil {
-		return nil, err
+		return nil, code.Wrap(err, code.DatabaseError)
 	}
 
 	return NewSqlResult(rows), nil

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -124,6 +125,10 @@ func (c *Config) GetUint32(key string) uint32 {
 
 func (c *Config) GetUint64(key string) uint64 {
 	return c.v.GetUint64(key)
+}
+
+func (c *Config) GetDuration(key string) time.Duration {
+	return c.v.GetDuration(key)
 }
 
 func (c *Config) IsParentKeyExists(key string) bool {

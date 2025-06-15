@@ -46,7 +46,7 @@ func (d *defaultLogger) print(level, msg string, callFields ...Field) {
 
 	fieldStrs := make([]string, 0, len(allFields))
 	for _, f := range allFields {
-		fieldStrs = append(fieldStrs, fmt.Sprintf("%s=%v", f.Key, f.Value))
+		fieldStrs = append(fieldStrs, fmt.Sprintf("%s = %v", f.Key, f.Value))
 	}
 	fieldText := ""
 	if len(fieldStrs) > 0 {
