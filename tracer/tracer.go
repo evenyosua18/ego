@@ -9,6 +9,7 @@ import (
 type SentryTracer struct {
 	isActive          bool
 	successSampleRate float64
+	rand              *rand.Rand
 }
 
 func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanOptionFunc) Span {
@@ -24,7 +25,7 @@ func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanO
 	}
 
 	// set logic to implement sample rate
-	if !options.ForceRecord && rand.Float64() > s.successSampleRate {
+	if !options.ForceRecord && s.rand.Float64() > s.successSampleRate {
 		return &NoopSpan{ctx: ctx}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/getsentry/sentry-go"
+	"math/rand"
 	"time"
 )
 
@@ -41,7 +42,11 @@ func RunSentry(sentryConfig Config) (flush func(flushTime string), err error) {
 		return nil, err
 	}
 
-	tracer = &SentryTracer{isActive: true}
+	tracer = &SentryTracer{
+		isActive:          true,
+		successSampleRate: sentryConfig.TraceSampleRate,
+		rand:              rand.New(rand.NewSource(time.Now().UnixNano())),
+	}
 
 	return flushSentry, nil
 }
