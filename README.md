@@ -39,7 +39,7 @@ func main() {
 | Database Scan Helper | [Scanny](https://github.com/georgysavva/scany)         |
 
 ### ONGOING
-- [ ] Validator
+- [x] Validator
 - [ ] Circuit Breaker
 - [ ] Benchmark
 - [ ] Unit Test
