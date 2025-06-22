@@ -3,10 +3,12 @@ package tracer
 import (
 	"context"
 	"github.com/getsentry/sentry-go"
+	"math/rand"
 )
 
 type SentryTracer struct {
-	isActive bool
+	isActive          bool
+	successSampleRate float64
 }
 
 func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanOptionFunc) Span {
@@ -18,6 +20,11 @@ func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanO
 
 	// validate if tracer is not active
 	if !s.isActive {
+		return &NoopSpan{ctx: ctx}
+	}
+
+	// set logic to implement sample rate
+	if !options.ForceRecord && rand.Float64() > s.successSampleRate {
 		return &NoopSpan{ctx: ctx}
 	}
 

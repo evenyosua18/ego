@@ -4,8 +4,9 @@ type (
 	SpanOptionFunc func(*SpanOptions)
 
 	SpanOptions struct {
-		Attributes map[string]any
-		Request    any
+		Attributes  map[string]any
+		Request     any
+		ForceRecord bool
 	}
 )
 
@@ -44,5 +45,11 @@ func WithFilePath(val string) SpanOptionFunc {
 		}
 
 		options.Attributes["file_path"] = val
+	}
+}
+
+func ForceToRecord() SpanOptionFunc {
+	return func(options *SpanOptions) {
+		options.ForceRecord = true
 	}
 }
