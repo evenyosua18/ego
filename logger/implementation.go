@@ -31,3 +31,9 @@ func Error(err error, fields ...Field) {
 func Fatal(err error, fields ...Field) {
 	globalLogger.Fatal(err, fields...)
 }
+
+// helper for redundant debug call
+
+func DebugQuery(query, args any) {
+	Debug("query statement", Field{Key: "query", Value: query}, Field{Key: "args", Value: args})
+}

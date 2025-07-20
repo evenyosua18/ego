@@ -52,6 +52,7 @@ const (
 	RouterPrefix         = "router.prefix"
 	RouterPort           = "router.port"
 	RouterShowRegistered = "router.show_registered"
+	RouterHtmlPath       = "router.html_path"
 
 	DefaultRouterPort     = ":8080"
 	DefaultRouterMaxLimit = 100
@@ -107,6 +108,7 @@ type (
 		Prefix         string
 		Port           string
 		ShowRegistered bool
+		HtmlPath       string
 	}
 )
 
@@ -156,6 +158,7 @@ func (c *Config) build() {
 		Prefix:         normalizeRoutePrefix(c.getOrDefault(RouterPrefix, "")),
 		Port:           normalizePort(c.getOrDefault(RouterPort, DefaultRouterPort)),
 		ShowRegistered: config.GetConfig().GetBool(RouterShowRegistered), // if not true or 1, will return false, no need to set default value anymore
+		HtmlPath:       c.getOrDefault(RouterHtmlPath, ""),
 	}
 
 	return

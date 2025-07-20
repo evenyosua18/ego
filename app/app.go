@@ -63,6 +63,7 @@ func (a *app) RunRest() {
 		MaxLimit:            appConfig.RouterConfig.MaxLimit,
 		MainPrefix:          appConfig.RouterConfig.Prefix,
 		ShowRegisteredRoute: appConfig.RouterConfig.ShowRegistered,
+		HtmlPath:            appConfig.RouterConfig.HtmlPath,
 	})
 
 	// listen

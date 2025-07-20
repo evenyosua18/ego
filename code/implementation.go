@@ -47,3 +47,10 @@ func Extract(err error) Code {
 
 	return InvalidErrorCode
 }
+
+// Is verified the error code
+func Is(err error, code string) bool {
+	c := Extract(err)
+
+	return c.Code() == code
+}

@@ -80,7 +80,7 @@ func init() {
 			CustomCode:      UnauthorizedError,
 			ResponseMessage: "permission not found",
 			ErrorMessage:    "unauthorized",
-			HttpCode:        400,
+			HttpCode:        401,
 			GrpcCode:        16,
 		},
 		RateLimitError: {

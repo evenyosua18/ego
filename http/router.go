@@ -5,6 +5,7 @@ import (
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/evenyosua18/ego/tracer"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/template/html/v2"
 )
 
 type Router struct {
@@ -12,8 +13,29 @@ type Router struct {
 }
 
 func NewRouter(cfg RouteConfig) *Router {
+	// set fiber configs
+	var fiberConfigs []fiber.Config
+
+	// set html engine to fiber configs
+	if cfg.HtmlPath != "" {
+		// register html
+		engine := html.New(cfg.HtmlPath, ".html")
+
+		// set fiber configs
+		fiberConfigs = append(fiberConfigs, fiber.Config{
+			Views: engine,
+		})
+	}
+
 	// route
-	fiberApp := fiber.New()
+	fiberApp := fiber.New(fiberConfigs...)
+
+	// set favicon route if implement html engine
+	if cfg.HtmlPath != "" {
+		fiberApp.Get("/favicon.ico", func(c fiber.Ctx) error {
+			return c.SendStatus(fiber.StatusNoContent)
+		})
+	}
 
 	// set middleware
 	fiberApp.Use(middleware.PanicHandler(), middleware.LogHandler())
