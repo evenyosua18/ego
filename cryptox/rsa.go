@@ -8,7 +8,7 @@ import (
 	"github.com/evenyosua18/ego/code"
 )
 
-func GetRSAKey(strPrivateKey string) (*rsa.PrivateKey, error) {
+func GetRSAPrivateKey(strPrivateKey string) (*rsa.PrivateKey, error) {
 	// decode the base64 string
 	pemData, err := base64.StdEncoding.DecodeString(strPrivateKey)
 	if err != nil {
@@ -33,4 +33,27 @@ func GetRSAKey(strPrivateKey string) (*rsa.PrivateKey, error) {
 	}
 
 	return convertedPrivateKey, nil
+}
+
+func GetRSAPublicKey(strPublicKey string) (*rsa.PublicKey, error) {
+	pemData, err := base64.StdEncoding.DecodeString(strPublicKey)
+	if err != nil {
+		return nil, code.Wrap(err, code.EncryptionError)
+	}
+
+	block, _ := pem.Decode(pemData)
+	if block == nil || block.Type != "PUBLIC KEY" {
+		return nil, code.Get(code.EncryptionError).SetErrorMessage("failed to decode pem block")
+	}
+
+	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, code.Wrap(err, code.EncryptionError)
+	}
+
+	rsaPub, ok := pubKey.(*rsa.PublicKey)
+	if !ok {
+		return nil, code.Get(code.EncryptionError).SetErrorMessage("not a rsa public key")
+	}
+	return rsaPub, nil
 }
