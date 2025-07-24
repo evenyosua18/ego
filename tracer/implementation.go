@@ -23,6 +23,14 @@ type (
 	}
 )
 
+func StartSpan(ctx context.Context, name string, opts ...SpanOptionFunc) Span {
+	return tracer.StartSpan(ctx, name, opts...)
+}
+
+func StartSpanWithContext(ctx context.Context, name string, opts ...SpanOptionFunc) (Span, context.Context) {
+	return tracer.StartSpanWithContext(ctx, name, opts...)
+}
+
 func RunSentry(sentryConfig Config) (flush func(flushTime string), err error) {
 	if sentryConfig.Dsn == "" || sentryConfig.Env == "" {
 		return nil, errConfigValue
@@ -51,14 +59,8 @@ func RunSentry(sentryConfig Config) (flush func(flushTime string), err error) {
 	return flushSentry, nil
 }
 
-func StartSpan(ctx context.Context, name string, opts ...SpanOptionFunc) Span {
-	return tracer.StartSpan(ctx, name, opts...)
-}
-
-func StartSpanWithContext(ctx context.Context, name string, opts ...SpanOptionFunc) (Span, context.Context) {
-	sp := tracer.StartSpan(ctx, name, opts...)
-
-	return sp, sp.Context()
+func GetTracer() Tracer {
+	return tracer
 }
 
 // default flush time is 1 second

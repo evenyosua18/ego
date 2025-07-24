@@ -12,12 +12,16 @@ type (
 )
 
 var (
+	dbManager IDbManager = &DbManager{}
+
 	errNoConnection       = code.Get(code.DatabaseError).SetErrorMessage("no connection found")
 	errNoDB               = code.Get(code.DatabaseError).SetErrorMessage("no database found")
 	errDBAlreadyConnected = fmt.Errorf("database already connected")
 )
 
-func GetExecutor(ctx context.Context) (ISQLExecutor, error) {
+type DbManager struct{}
+
+func (s *DbManager) GetExecutor(ctx context.Context) (ISQLExecutor, error) {
 	if tx, ok := ctx.Value(txKey{}).(ISqlTx); ok {
 		return tx, nil
 	}
@@ -29,7 +33,7 @@ func GetExecutor(ctx context.Context) (ISQLExecutor, error) {
 	return nil, errNoConnection
 }
 
-func BeginTx(ctx context.Context) (ISqlTx, context.Context, error) {
+func (s *DbManager) BeginTx(ctx context.Context) (ISqlTx, context.Context, error) {
 	// get sql db
 	sqlDb, err := GetDB()
 
@@ -50,7 +54,7 @@ func BeginTx(ctx context.Context) (ISqlTx, context.Context, error) {
 	return tx, newCtx, nil
 }
 
-func SetDBContext(ctx context.Context) (context.Context, error) {
+func (s *DbManager) SetDBContext(ctx context.Context) (context.Context, error) {
 	// prevent empty db
 	sqlDb, err := GetDB()
 
@@ -61,4 +65,8 @@ func SetDBContext(ctx context.Context) (context.Context, error) {
 	newCtx := context.WithValue(ctx, dbKey{}, sqlDb)
 
 	return newCtx, nil
+}
+
+func GetDbManager() IDbManager {
+	return dbManager
 }

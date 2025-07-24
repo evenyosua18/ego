@@ -4,6 +4,7 @@ import "context"
 
 type Tracer interface {
 	StartSpan(ctx context.Context, name string, opts ...SpanOptionFunc) Span
+	StartSpanWithContext(ctx context.Context, name string, opts ...SpanOptionFunc) (Span, context.Context)
 }
 
 type Span interface {

@@ -1,5 +1,7 @@
 package sqldb
 
+import "context"
+
 type ISqlDB interface {
 	ISQLExecutor
 	Begin() (ISqlTx, error)
@@ -34,4 +36,10 @@ type ISQLExecutor interface {
 	QueryRow(query string, args ...any) ISqlRow
 	Query(query string, args ...any) (ISqlRows, error)
 	Exec(query string, args ...any) (ISqlResult, error)
+}
+
+type IDbManager interface {
+	GetExecutor(ctx context.Context) (ISQLExecutor, error)
+	BeginTx(ctx context.Context) (ISqlTx, context.Context, error)
+	SetDBContext(ctx context.Context) (context.Context, error)
 }
