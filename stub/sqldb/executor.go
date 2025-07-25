@@ -14,4 +14,6 @@ type StubExecutor struct {
 	QueryScanAllErr   error
 	QueryScanOneErr   error
 	QueryRowIndex     int
+	ExpectedQuery     string
+	ExpectedArgs      []any
 }

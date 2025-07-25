@@ -6,9 +6,11 @@ import (
 )
 
 type StubDbManager struct {
-	// manager
-	IsReturnTx bool
-	ManagerErr error
+	// define return db or tx
+	IsReturnDb bool
+
+	// executor error
+	ExecutorErr error
 
 	// commit
 	CommitErr error
@@ -25,15 +27,21 @@ type StubDbManager struct {
 	// Begin
 	BeginErr error
 
+	// Begin tx
+	BeginTxErr error
+
+	// set db context error
+	SetDBContextErr error
+
 	StubExecutor
 }
 
 func (s *StubDbManager) GetExecutor(ctx context.Context) (sqldb.ISQLExecutor, error) {
-	if s.ManagerErr != nil {
-		return nil, s.ManagerErr
+	if s.ExecutorErr != nil {
+		return nil, s.ExecutorErr
 	}
 
-	if s.IsReturnTx {
+	if !s.IsReturnDb {
 		return &StubSqlTx{
 			ExecError:         s.ExecError,
 			ResultValue:       s.ResultValue,
@@ -51,6 +59,8 @@ func (s *StubDbManager) GetExecutor(ctx context.Context) (sqldb.ISQLExecutor, er
 			CommitErr:         s.CommitErr,
 			RollbackErr:       s.RollbackErr,
 			EndTxErr:          s.EndTxErr,
+			ExpectedQuery:     s.ExpectedQuery,
+			ExpectedArgs:      s.ExpectedArgs,
 		}, nil
 	} else {
 		return &StubSqlDb{
@@ -72,6 +82,41 @@ func (s *StubDbManager) GetExecutor(ctx context.Context) (sqldb.ISQLExecutor, er
 			CommitErr:         s.CommitErr,
 			RollbackErr:       s.RollbackErr,
 			EndTxErr:          s.EndTxErr,
+			ExpectedQuery:     s.ExpectedQuery,
+			ExpectedArgs:      s.ExpectedArgs,
 		}, nil
 	}
+}
+
+func (s *StubDbManager) BeginTx(ctx context.Context) (sqldb.ISqlTx, context.Context, error) {
+	if s.BeginTxErr != nil {
+		return nil, nil, s.BeginTxErr
+	}
+
+	return &StubSqlTx{
+		ExecError:         s.ExecError,
+		ResultValue:       s.ResultValue,
+		ResultError:       s.ResultError,
+		QueryRowValues:    s.QueryRowValues,
+		QueryRowErr:       s.QueryRowErr,
+		QueryValues:       s.QueryValues,
+		QueryDestination:  s.QueryDestination,
+		QueryErr:          s.QueryErr,
+		QueryCloseErr:     s.QueryCloseErr,
+		QueryMapResultErr: s.QueryMapResultErr,
+		QueryScanAllErr:   s.QueryScanAllErr,
+		QueryScanOneErr:   s.QueryScanOneErr,
+		QueryRowIndex:     s.QueryRowIndex,
+		CommitErr:         s.CommitErr,
+		RollbackErr:       s.RollbackErr,
+		EndTxErr:          s.EndTxErr,
+	}, ctx, nil
+}
+
+func (s *StubDbManager) SetDBContext(ctx context.Context) (context.Context, error) {
+	if s.SetDBContextErr != nil {
+		return ctx, s.SetDBContextErr
+	}
+
+	return ctx, nil
 }

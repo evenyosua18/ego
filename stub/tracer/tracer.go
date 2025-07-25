@@ -5,16 +5,13 @@ import (
 	"github.com/evenyosua18/ego/tracer"
 )
 
-type StubTracer struct {
-	SpanToReturn tracer.Span
-}
+type StubTracer struct{}
 
 func (s *StubTracer) StartSpan(ctx context.Context, name string, opts ...tracer.SpanOptionFunc) tracer.Span {
-	if s.SpanToReturn != nil {
-		return s.SpanToReturn
+	return &StubSpan{
+		Ctx:     ctx,
+		TraceID: "TEST",
 	}
-
-	return &StubSpan{}
 }
 
 func (s *StubTracer) StartSpanWithContext(ctx context.Context, name string, opts ...tracer.SpanOptionFunc) (tracer.Span, context.Context) {
