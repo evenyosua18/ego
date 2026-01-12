@@ -2,10 +2,12 @@ package http
 
 import (
 	"fmt"
+
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/evenyosua18/ego/tracer"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/template/html/v2"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	html "github.com/gofiber/template/html/v2"
 )
 
 type Router struct {
@@ -43,6 +45,16 @@ func NewRouter(cfg RouteConfig) *Router {
 	// set rate limiter middleware
 	if cfg.MaxLimit != 0 {
 		fiberApp.Use(middleware.RateLimiter(cfg.MaxLimit))
+	}
+
+	// set cors
+	if len(cfg.CORS.AllowOrigins) > 0 {
+		fiberApp.Use(cors.New(cors.Config{
+			AllowOrigins:     cfg.CORS.AllowOrigins,
+			AllowMethods:     cfg.CORS.AllowMethods,
+			AllowHeaders:     cfg.CORS.AllowHeaders,
+			AllowCredentials: cfg.CORS.AllowCredentials,
+		}))
 	}
 
 	// set router

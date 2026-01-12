@@ -2,9 +2,10 @@ package app
 
 import (
 	"fmt"
-	"github.com/evenyosua18/ego/config"
 	"strings"
 	"time"
+
+	"github.com/evenyosua18/ego/config"
 )
 
 const (
@@ -48,19 +49,21 @@ const (
 	DefaultTracerSampleRate = 1.0
 	DefaultTracerFlushTime  = "1"
 
-	RouterMaxLimit       = "router.rate_limit"
-	RouterPrefix         = "router.prefix"
-	RouterPort           = "router.port"
-	RouterShowRegistered = "router.show_registered"
-	RouterHtmlPath       = "router.html_path"
+	RouterMaxLimit         = "router.rate_limit"
+	RouterPrefix           = "router.prefix"
+	RouterPort             = "router.port"
+	RouterShowRegistered   = "router.show_registered"
+	RouterHtmlPath         = "router.html_path"
+	RouterAllowOrigins     = "router.allow_origins"
+	RouterAllowMethods     = "router.allow_methods"
+	RouterAllowHeaders     = "router.allow_headers"
+	RouterAllowCredentials = "router.allow_credentials"
 
 	DefaultRouterPort     = ":8080"
 	DefaultRouterMaxLimit = 100
 )
 
-var (
-	ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
-)
+var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
 
 type (
 	Config struct {
@@ -109,6 +112,12 @@ type (
 		Port           string
 		ShowRegistered bool
 		HtmlPath       string
+
+		// CORS
+		AllowOrigins     []string
+		AllowMethods     []string
+		AllowHeaders     []string
+		AllowCredentials bool
 	}
 )
 
@@ -154,11 +163,15 @@ func (c *Config) build() {
 
 	// route
 	c.RouterConfig = &Router{
-		MaxLimit:       c.getOrDefaultInt(RouterMaxLimit, DefaultRouterMaxLimit),
-		Prefix:         normalizeRoutePrefix(c.getOrDefault(RouterPrefix, "")),
-		Port:           normalizePort(c.getOrDefault(RouterPort, DefaultRouterPort)),
-		ShowRegistered: config.GetConfig().GetBool(RouterShowRegistered), // if not true or 1, will return false, no need to set default value anymore
-		HtmlPath:       c.getOrDefault(RouterHtmlPath, ""),
+		MaxLimit:         c.getOrDefaultInt(RouterMaxLimit, DefaultRouterMaxLimit),
+		Prefix:           normalizeRoutePrefix(c.getOrDefault(RouterPrefix, "")),
+		Port:             normalizePort(c.getOrDefault(RouterPort, DefaultRouterPort)),
+		ShowRegistered:   config.GetConfig().GetBool(RouterShowRegistered), // if not true or 1, will return false, no need to set default value anymore
+		HtmlPath:         c.getOrDefault(RouterHtmlPath, ""),
+		AllowOrigins:     config.GetConfig().GetStringSlice(RouterAllowOrigins),
+		AllowMethods:     config.GetConfig().GetStringSlice(RouterAllowMethods),
+		AllowHeaders:     config.GetConfig().GetStringSlice(RouterAllowHeaders),
+		AllowCredentials: config.GetConfig().GetBool(RouterAllowCredentials),
 	}
 
 	return
@@ -188,7 +201,6 @@ func (c *Config) getOrDefaultDuration(key string, defaultVal time.Duration) time
 
 	// convert to duration
 	valDuration, err := time.ParseDuration(val)
-
 	if err != nil {
 		return defaultVal
 	}

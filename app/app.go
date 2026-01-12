@@ -32,7 +32,6 @@ func (a *app) RunRest() {
 			TraceSampleRate: appConfig.TracerConfig.SampleRate,
 			FlushTime:       appConfig.TracerConfig.FlushTime,
 		})
-
 		if err != nil {
 			panic(err)
 		}
@@ -49,7 +48,6 @@ func (a *app) RunRest() {
 			ConnMaxLifetime: appConfig.DatabaseConfig.ConnMaxLifetime,
 			ConnMaxIdleTime: appConfig.DatabaseConfig.ConnMaxIdleTime,
 		})
-
 		if err != nil {
 			panic(err)
 		}
@@ -64,6 +62,12 @@ func (a *app) RunRest() {
 		MainPrefix:          appConfig.RouterConfig.Prefix,
 		ShowRegisteredRoute: appConfig.RouterConfig.ShowRegistered,
 		HtmlPath:            appConfig.RouterConfig.HtmlPath,
+		CORS: http.CORSConfig{
+			AllowOrigins:     appConfig.RouterConfig.AllowOrigins,
+			AllowMethods:     appConfig.RouterConfig.AllowMethods,
+			AllowHeaders:     appConfig.RouterConfig.AllowHeaders,
+			AllowCredentials: appConfig.RouterConfig.AllowCredentials,
+		},
 	})
 
 	// listen

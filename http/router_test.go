@@ -1,11 +1,12 @@
 package http
 
 import (
-	"github.com/gofiber/fiber/v3"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func TestRouter_Methods(t *testing.T) {
@@ -125,7 +126,6 @@ func TestRouter_Group(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/api/hello", nil)
 	resp, err := app.Test(req)
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -133,5 +133,39 @@ func TestRouter_Group(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected status code %d, got %d", http.StatusOK, resp.StatusCode)
 	}
+}
 
+func TestRouter_CORS(t *testing.T) {
+	// setup config with CORS
+	cfg := RouteConfig{
+		CORS: CORSConfig{
+			AllowOrigins: []string{"http://example.com"},
+			AllowMethods: []string{"GET", "POST"},
+			AllowHeaders: []string{"Content-Type"},
+		},
+	}
+
+	// setup router
+	r := NewRouter(cfg)
+
+	// register a route
+	r.Get("/cors", func(c Context) error {
+		return c.Send(200, []byte("ok"))
+	})
+
+	// create request with Origin header
+	req := httptest.NewRequest(http.MethodGet, "/cors", nil)
+	req.Header.Set("Origin", "http://example.com")
+
+	// perform request
+	resp, err := r.app.(*fiber.App).Test(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// check CORS headers
+	if allowOrigin := resp.Header.Get("Access-Control-Allow-Origin"); allowOrigin != "http://example.com" {
+		t.Errorf("expected Access-Control-Allow-Origin to be http://example.com, got %s", allowOrigin)
+	}
 }
