@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context" // Added for ShutdownWithContext
 	"fmt"
 
 	"github.com/evenyosua18/ego/http/middleware"
@@ -82,6 +83,14 @@ func NewRouter(cfg RouteConfig) *Router {
 
 func (r *Router) Listen(port string) error {
 	return r.app.(*fiber.App).Listen(port)
+}
+
+func (r *Router) Shutdown() error {
+	return r.app.(*fiber.App).Shutdown()
+}
+
+func (r *Router) ShutdownWithContext(ctx context.Context) error {
+	return r.app.(*fiber.App).ShutdownWithContext(ctx)
 }
 
 func (r *Router) wrap(handler RouteHandler) fiber.Handler {

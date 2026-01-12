@@ -1,6 +1,9 @@
 package http
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type HttpRouter struct {
 	Calls      *[]string
@@ -37,6 +40,16 @@ func (m *HttpRouter) Group(prefix string) IHttpRouter {
 
 func (m *HttpRouter) Listen(port string) error {
 	*m.Calls = append(*m.Calls, fmt.Sprintf("LISTEN %s", port))
+	return nil
+}
+
+func (m *HttpRouter) Shutdown() error {
+	*m.Calls = append(*m.Calls, "SHUTDOWN")
+	return nil
+}
+
+func (m *HttpRouter) ShutdownWithContext(ctx context.Context) error {
+	*m.Calls = append(*m.Calls, "SHUTDOWN WITH CONTEXT")
 	return nil
 }
 

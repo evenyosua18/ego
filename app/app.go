@@ -1,6 +1,13 @@
 package app
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/evenyosua18/ego/code"
 	"github.com/evenyosua18/ego/config"
 	"github.com/evenyosua18/ego/http"
@@ -70,9 +77,25 @@ func (a *app) RunRest() {
 		},
 	})
 
-	// listen
-	if err := a.httpRouter.Listen(appConfig.RouterConfig.Port); err != nil {
-		panic(err)
+	// graceful shutdown setup
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		// listen
+		if err := a.httpRouter.Listen(appConfig.RouterConfig.Port); err != nil {
+			panic(err)
+		}
+	}()
+
+	<-quit
+	fmt.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // 5s timeout
+	defer cancel()
+
+	if err := a.httpRouter.ShutdownWithContext(ctx); err != nil {
+		panic(fmt.Sprintf("Server forced to shutdown: %v", err))
 	}
 }
 

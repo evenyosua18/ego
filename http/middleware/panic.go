@@ -2,12 +2,13 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/evenyosua18/ego/code"
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/recover"
 	"log"
 	"runtime"
 	"runtime/debug"
+
+	"github.com/evenyosua18/ego/code"
+	fiber "github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 func PanicHandler() fiber.Handler {
@@ -19,7 +20,7 @@ func PanicHandler() fiber.Handler {
 
 	// set stack trace handler
 	config.StackTraceHandler = func(c fiber.Ctx, e any) {
-		//capture panic message
+		// capture panic message
 		panicMessage := ""
 
 		switch v := e.(type) {

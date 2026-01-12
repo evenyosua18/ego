@@ -16,6 +16,8 @@ type IHttpRouter interface {
 
 	Group(prefix string) IHttpRouter
 	Listen(port string) error
+	Shutdown() error
+	ShutdownWithContext(ctx context.Context) error
 }
 
 type Context interface {

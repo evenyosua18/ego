@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/evenyosua18/ego/code"
-	"github.com/gofiber/fiber/v3"
+	fiber "github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/limiter"
 )
 
