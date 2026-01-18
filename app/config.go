@@ -58,6 +58,7 @@ const (
 	RouterAllowMethods     = "router.allow_methods"
 	RouterAllowHeaders     = "router.allow_headers"
 	RouterAllowCredentials = "router.allow_credentials"
+	RouterDocPath          = "router.doc_path"
 
 	DefaultRouterPort     = ":8080"
 	DefaultRouterMaxLimit = 100
@@ -118,6 +119,9 @@ type (
 		AllowMethods     []string
 		AllowHeaders     []string
 		AllowCredentials bool
+
+		// docs
+		DocPath string
 	}
 )
 
@@ -172,6 +176,7 @@ func (c *Config) build() {
 		AllowMethods:     config.GetConfig().GetStringSlice(RouterAllowMethods),
 		AllowHeaders:     config.GetConfig().GetStringSlice(RouterAllowHeaders),
 		AllowCredentials: config.GetConfig().GetBool(RouterAllowCredentials),
+		DocPath:          c.getOrDefault(RouterDocPath, ""),
 	}
 
 	return

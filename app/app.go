@@ -75,6 +75,9 @@ func (a *app) RunRest() {
 			AllowHeaders:     appConfig.RouterConfig.AllowHeaders,
 			AllowCredentials: appConfig.RouterConfig.AllowCredentials,
 		},
+		Doc: http.DocumentationConfig{
+			Path: appConfig.RouterConfig.DocPath,
+		},
 	})
 
 	// graceful shutdown setup

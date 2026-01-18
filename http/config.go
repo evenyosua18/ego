@@ -6,6 +6,7 @@ type RouteConfig struct {
 	ShowRegisteredRoute bool
 	HtmlPath            string
 	CORS                CORSConfig
+	Doc                 DocumentationConfig
 }
 
 type CORSConfig struct {
@@ -13,4 +14,8 @@ type CORSConfig struct {
 	AllowMethods     []string
 	AllowHeaders     []string
 	AllowCredentials bool
+}
+
+type DocumentationConfig struct {
+	Path string
 }

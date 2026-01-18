@@ -6,6 +6,7 @@ import (
 
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/evenyosua18/ego/tracer"
+	"github.com/gofiber/contrib/v3/swaggerui"
 	fiber "github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	html "github.com/gofiber/template/html/v2"
@@ -32,6 +33,22 @@ func NewRouter(cfg RouteConfig) *Router {
 
 	// route
 	fiberApp := fiber.New(fiberConfigs...)
+
+	// setup documentation
+	if cfg.Doc.Path != "" {
+		// fiber-swagger middleware
+		fiberApp.Get("/docs", swaggerui.New(swaggerui.Config{
+			BasePath: "/",
+			FilePath: cfg.Doc.Path,
+			Path:     "docs",
+		}))
+
+		// set swagger
+		fiberApp.Get("/"+cfg.Doc.Path, func(c fiber.Ctx) error {
+			// Returns the file located at ./docs/swagger.json
+			return c.SendFile(cfg.Doc.Path)
+		})
+	}
 
 	// set favicon route if implement html engine
 	if cfg.HtmlPath != "" {
