@@ -3,13 +3,14 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"github.com/evenyosua18/ego/code"
-	"github.com/gofiber/fiber/v3"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/evenyosua18/ego/code"
+	fiber "github.com/gofiber/fiber/v3"
 )
 
 type fiberContext struct {

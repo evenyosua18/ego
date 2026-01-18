@@ -6,7 +6,7 @@ import (
 
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/evenyosua18/ego/tracer"
-	"github.com/gofiber/fiber/v3"
+	fiber "github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	html "github.com/gofiber/template/html/v2"
 )
@@ -49,14 +49,25 @@ func NewRouter(cfg RouteConfig) *Router {
 	}
 
 	// set cors
+	corsConfig := cors.ConfigDefault
+
 	if len(cfg.CORS.AllowOrigins) > 0 {
-		fiberApp.Use(cors.New(cors.Config{
-			AllowOrigins:     cfg.CORS.AllowOrigins,
-			AllowMethods:     cfg.CORS.AllowMethods,
-			AllowHeaders:     cfg.CORS.AllowHeaders,
-			AllowCredentials: cfg.CORS.AllowCredentials,
-		}))
+		corsConfig.AllowOrigins = cfg.CORS.AllowOrigins
 	}
+
+	if len(cfg.CORS.AllowMethods) > 0 {
+		corsConfig.AllowMethods = cfg.CORS.AllowMethods
+	}
+
+	if len(cfg.CORS.AllowHeaders) > 0 {
+		corsConfig.AllowHeaders = cfg.CORS.AllowHeaders
+	}
+
+	if cfg.CORS.AllowCredentials {
+		corsConfig.AllowCredentials = cfg.CORS.AllowCredentials
+	}
+
+	fiberApp.Use(cors.New(corsConfig))
 
 	// set router
 	router := &Router{
