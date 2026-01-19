@@ -66,8 +66,8 @@ func NewRouter(cfg RouteConfig) *Router {
 	fiberApp.Use(middleware.PanicHandler(), middleware.LogHandler())
 
 	// set rate limiter middleware
-	if cfg.MaxLimit != 0 {
-		fiberApp.Use(middleware.RateLimiter(cfg.MaxLimit))
+	if cfg.RateLimit.MaxLimit != 0 {
+		fiberApp.Use(middleware.RateLimiter(cfg.RateLimit.MaxLimit))
 	}
 
 	// set cors

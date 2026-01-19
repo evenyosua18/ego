@@ -49,7 +49,6 @@ const (
 	DefaultTracerSampleRate = 1.0
 	DefaultTracerFlushTime  = "1"
 
-	RouterMaxLimit         = "router.rate_limit"
 	RouterPrefix           = "router.prefix"
 	RouterPort             = "router.port"
 	RouterShowRegistered   = "router.show_registered"
@@ -60,6 +59,7 @@ const (
 	RouterAllowCredentials = "router.allow_credentials"
 	RouterDocPath          = "router.doc_path"
 	RouterMaxConnection    = "router.max_connection"
+	RouterMaxLimit         = "router.rate_limit.max_limit"
 
 	DefaultRouterPort          = ":8080"
 	DefaultRouterMaxLimit      = 100
@@ -110,7 +110,6 @@ type (
 	}
 
 	Router struct {
-		MaxLimit       int
 		Prefix         string
 		Port           string
 		ShowRegistered bool
@@ -125,6 +124,9 @@ type (
 
 		// docs
 		DocPath string
+
+		// rate limit
+		MaxLimit int
 	}
 )
 

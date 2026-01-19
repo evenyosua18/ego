@@ -65,7 +65,6 @@ func (a *app) RunRest() {
 
 	// get router
 	a.httpRouter = http.NewRouter(http.RouteConfig{
-		MaxLimit:            appConfig.RouterConfig.MaxLimit,
 		MainPrefix:          appConfig.RouterConfig.Prefix,
 		ShowRegisteredRoute: appConfig.RouterConfig.ShowRegistered,
 		HtmlPath:            appConfig.RouterConfig.HtmlPath,
@@ -77,6 +76,9 @@ func (a *app) RunRest() {
 		},
 		Doc: http.DocumentationConfig{
 			Path: appConfig.RouterConfig.DocPath,
+		},
+		RateLimit: http.RateLimitConfig{
+			MaxLimit: appConfig.RouterConfig.MaxLimit,
 		},
 	})
 
