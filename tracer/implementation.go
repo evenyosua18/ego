@@ -3,9 +3,10 @@ package tracer
 import (
 	"context"
 	"fmt"
-	"github.com/getsentry/sentry-go"
 	"math/rand"
 	"time"
+
+	sentry "github.com/getsentry/sentry-go"
 )
 
 var (
@@ -50,23 +51,26 @@ func RunSentry(sentryConfig Config) (flush func(flushTime string), err error) {
 		return nil, err
 	}
 
-	tracer = &SentryTracer{
-		isActive:          true,
-		successSampleRate: sentryConfig.TraceSampleRate,
-		rand:              rand.New(rand.NewSource(time.Now().UnixNano())),
+	// update tracer instance
+	if t, ok := tracer.(*SentryTracer); ok {
+		t.mu.Lock()
+		t.isActive = true
+		t.successSampleRate = sentryConfig.TraceSampleRate
+		t.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+		t.mu.Unlock()
 	}
 
 	return flushSentry, nil
 }
 
 func GetTracer() Tracer {
+	fmt.Println("Sentry initialized", tracer.(*SentryTracer).isActive)
 	return tracer
 }
 
 // default flush time is 1 second
 func flushSentry(flushTime string) {
 	timeout, err := time.ParseDuration(flushTime + "s")
-
 	if err != nil {
 		timeout = 1 * time.Second
 	}

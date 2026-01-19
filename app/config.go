@@ -59,9 +59,11 @@ const (
 	RouterAllowHeaders     = "router.allow_headers"
 	RouterAllowCredentials = "router.allow_credentials"
 	RouterDocPath          = "router.doc_path"
+	RouterMaxConnection    = "router.max_connection"
 
-	DefaultRouterPort     = ":8080"
-	DefaultRouterMaxLimit = 100
+	DefaultRouterPort          = ":8080"
+	DefaultRouterMaxLimit      = 100
+	DefaultRouterMaxConnection = 5000
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
@@ -113,6 +115,7 @@ type (
 		Port           string
 		ShowRegistered bool
 		HtmlPath       string
+		MaxConnection  int
 
 		// CORS
 		AllowOrigins     []string
@@ -177,6 +180,7 @@ func (c *Config) build() {
 		AllowHeaders:     config.GetConfig().GetStringSlice(RouterAllowHeaders),
 		AllowCredentials: config.GetConfig().GetBool(RouterAllowCredentials),
 		DocPath:          c.getOrDefault(RouterDocPath, ""),
+		MaxConnection:    c.getOrDefaultInt(RouterMaxConnection, DefaultRouterMaxConnection),
 	}
 
 	return

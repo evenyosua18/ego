@@ -31,6 +31,11 @@ func NewRouter(cfg RouteConfig) *Router {
 		})
 	}
 
+	// set throttle
+	fiberConfigs = append(fiberConfigs, fiber.Config{
+		Concurrency: cfg.MaxConnection,
+	})
+
 	// route
 	fiberApp := fiber.New(fiberConfigs...)
 

@@ -2,14 +2,17 @@ package tracer
 
 import (
 	"context"
-	"github.com/getsentry/sentry-go"
 	"math/rand"
+	"sync"
+
+	sentry "github.com/getsentry/sentry-go"
 )
 
 type SentryTracer struct {
 	isActive          bool
 	successSampleRate float64
 	rand              *rand.Rand
+	mu                sync.Mutex
 }
 
 func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanOptionFunc) Span {
@@ -25,7 +28,11 @@ func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanO
 	}
 
 	// set logic to implement sample rate
-	if !options.ForceRecord && s.rand.Float64() > s.successSampleRate {
+	s.mu.Lock()
+	shouldRecord := !options.ForceRecord && s.rand.Float64() > s.successSampleRate
+	s.mu.Unlock()
+
+	if shouldRecord {
 		return &NoopSpan{ctx: ctx}
 	}
 

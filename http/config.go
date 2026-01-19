@@ -2,6 +2,7 @@ package http
 
 type RouteConfig struct {
 	MaxLimit            int
+	MaxConnection       int
 	MainPrefix          string
 	ShowRegisteredRoute bool
 	HtmlPath            string
