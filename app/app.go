@@ -11,6 +11,7 @@ import (
 	"github.com/evenyosua18/ego/code"
 	"github.com/evenyosua18/ego/config"
 	"github.com/evenyosua18/ego/http"
+	"github.com/evenyosua18/ego/logger"
 	"github.com/evenyosua18/ego/sqldb"
 	"github.com/evenyosua18/ego/tracer"
 )
@@ -23,6 +24,9 @@ func (a *app) RunRest() {
 	// init config
 	appConfig := Config{}
 	appConfig.build()
+
+	// setup logger
+	logger.SetLogger(logger.NewDefaultLogger(logger.ParseLevel(appConfig.LoggerConfig.Level)))
 
 	// load custom codes
 	if appConfig.CodeConfig.Filename != "" {

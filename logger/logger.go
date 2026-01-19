@@ -14,4 +14,14 @@ type (
 		Key   string
 		Value any
 	}
+
+	Level int
+)
+
+const (
+	LevelDebug Level = iota
+	LevelInfo
+	LevelWarn
+	LevelError
+	LevelFatal
 )

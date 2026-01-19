@@ -9,34 +9,48 @@ import (
 
 type defaultLogger struct {
 	fields []Field
+	level  Level
 }
 
 func (d *defaultLogger) Debug(msg string, fields ...Field) {
-	d.print("DEBUG", msg, fields...)
+	if d.level <= LevelDebug {
+		d.print("DEBUG", msg, fields...)
+	}
 }
 
 func (d *defaultLogger) Info(msg string, fields ...Field) {
-	d.print("INFO", msg, fields...)
+	if d.level <= LevelInfo {
+		d.print("INFO", msg, fields...)
+	}
 }
 
 func (d *defaultLogger) Warn(msg string, fields ...Field) {
-	d.print("WARN", msg, fields...)
+	if d.level <= LevelWarn {
+		d.print("WARN", msg, fields...)
+	}
 }
 
 func (d *defaultLogger) Error(err error, fields ...Field) {
-	d.print("ERROR", err.Error(), fields...)
+	if d.level <= LevelError {
+		d.print("ERROR", err.Error(), fields...)
+	}
 }
 
 func (d *defaultLogger) Fatal(err error, fields ...Field) {
-	d.print("FATAL", err.Error(), fields...)
-	os.Exit(1)
+	if d.level <= LevelFatal {
+		d.print("FATAL", err.Error(), fields...)
+		os.Exit(1)
+	}
 }
 
 func (d *defaultLogger) With(fields ...Field) Logger {
 	merged := make([]Field, 0, len(d.fields)+len(fields))
 	merged = append(merged, d.fields...)
 	merged = append(merged, fields...)
-	return &defaultLogger{fields: merged}
+	return &defaultLogger{
+		fields: merged,
+		level:  d.level,
+	}
 }
 
 func (d *defaultLogger) print(level, msg string, callFields ...Field) {
@@ -54,4 +68,27 @@ func (d *defaultLogger) print(level, msg string, callFields ...Field) {
 	}
 
 	log.Printf("[%s] %s%s", level, msg, fieldText)
+}
+
+func ParseLevel(lvl string) Level {
+	switch strings.ToLower(lvl) {
+	case "debug":
+		return LevelDebug
+	case "info":
+		return LevelInfo
+	case "warn":
+		return LevelWarn
+	case "error":
+		return LevelError
+	case "fatal":
+		return LevelFatal
+	default:
+		return LevelInfo
+	}
+}
+
+func NewDefaultLogger(level Level) Logger {
+	return &defaultLogger{
+		level: level,
+	}
 }

@@ -64,6 +64,9 @@ const (
 	DefaultRouterPort          = ":8080"
 	DefaultRouterMaxLimit      = 100
 	DefaultRouterMaxConnection = 5000
+
+	LoggerLevel        = "logger.level"
+	DefaultLoggerLevel = "info"
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
@@ -75,6 +78,7 @@ type (
 		DatabaseConfig *Database
 		TracerConfig   *Tracer
 		RouterConfig   *Router
+		LoggerConfig   *Logger
 	}
 
 	Code struct {
@@ -85,6 +89,10 @@ type (
 		Name string
 		Port string
 		Env  string
+	}
+
+	Logger struct {
+		Level string
 	}
 
 	Database struct {
@@ -135,6 +143,11 @@ func (c *Config) build() {
 	c.AppConfig = &App{
 		Name: c.getOrDefault(ServiceName, DefaultServiceName),
 		Env:  c.getOrDefault(ServiceEnv, DefaultServiceEnv),
+	}
+
+	// setup logger configuration
+	c.LoggerConfig = &Logger{
+		Level: c.getOrDefault(LoggerLevel, DefaultLoggerLevel),
 	}
 
 	// setup code configuration
