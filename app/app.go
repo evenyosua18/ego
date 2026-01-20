@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/evenyosua18/ego/code"
 	"github.com/evenyosua18/ego/config"
@@ -100,7 +99,7 @@ func (a *app) RunRest() {
 	<-quit
 	fmt.Println("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // 5s timeout
+	ctx, cancel := context.WithTimeout(context.Background(), appConfig.AppConfig.ShutdownTimeout) // 5s timeout
 	defer cancel()
 
 	if err := a.httpRouter.ShutdownWithContext(ctx); err != nil {

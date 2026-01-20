@@ -11,11 +11,13 @@ import (
 const (
 	LocalEnv = "local" // used for validation: db password can be empty if local env
 
-	ServiceName = "service.name"
-	ServiceEnv  = "service.env"
+	ServiceName            = "service.name"
+	ServiceEnv             = "service.env"
+	ServiceShutdownTimeout = "service.shutdown_timeout"
 
-	DefaultServiceName = "temporary-service"
-	DefaultServiceEnv  = "local"
+	DefaultServiceName            = "temporary-service"
+	DefaultServiceEnv             = "local"
+	DefaultServiceShutdownTimeout = 30 * time.Second
 
 	CustomCodeFilePath = "code.filename"
 
@@ -86,9 +88,10 @@ type (
 	}
 
 	App struct {
-		Name string
-		Port string
-		Env  string
+		Name            string
+		Port            string
+		Env             string
+		ShutdownTimeout time.Duration
 	}
 
 	Logger struct {
@@ -141,8 +144,9 @@ type (
 func (c *Config) build() {
 	// setup service configuration
 	c.AppConfig = &App{
-		Name: c.getOrDefault(ServiceName, DefaultServiceName),
-		Env:  c.getOrDefault(ServiceEnv, DefaultServiceEnv),
+		Name:            c.getOrDefault(ServiceName, DefaultServiceName),
+		Env:             c.getOrDefault(ServiceEnv, DefaultServiceEnv),
+		ShutdownTimeout: c.getOrDefaultDuration(ServiceShutdownTimeout, DefaultServiceShutdownTimeout),
 	}
 
 	// setup logger configuration
