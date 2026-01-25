@@ -1,10 +1,11 @@
 package app
 
 import (
-	"github.com/evenyosua18/ego/config"
-	"github.com/spf13/viper"
 	"reflect"
 	"testing"
+
+	"github.com/evenyosua18/ego/config"
+	"github.com/spf13/viper"
 )
 
 func Test_normalizePort(t *testing.T) {
@@ -63,8 +64,9 @@ func TestConfig_build(t *testing.T) {
 			},
 			expectedConf: Config{
 				AppConfig: &App{
-					Name: "test-name",
-					Env:  "local",
+					Name:            "test-name",
+					Env:             "local",
+					ShutdownTimeout: DefaultServiceShutdownTimeout,
 				},
 			},
 		},
@@ -79,8 +81,9 @@ func TestConfig_build(t *testing.T) {
 			},
 			expectedConf: Config{
 				AppConfig: &App{
-					Name: DefaultServiceName,
-					Env:  "local",
+					Name:            DefaultServiceName,
+					Env:             "local",
+					ShutdownTimeout: DefaultServiceShutdownTimeout,
 				},
 			},
 		},

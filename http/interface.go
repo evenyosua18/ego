@@ -27,6 +27,7 @@ type Context interface {
 	BindQuery(destination any) error
 	Body() []byte
 	RequestBody(res any) error
+	GetRequestHeader(key string) string
 
 	Cookie(name string, defaultValue ...string) string
 	SetCookie(name, value string, expiredAt time.Time)

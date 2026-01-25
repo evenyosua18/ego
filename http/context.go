@@ -45,6 +45,10 @@ func (f *fiberContext) Context() context.Context {
 	return f.ctx.Context()
 }
 
+func (f *fiberContext) GetRequestHeader(key string) string {
+	return f.ctx.Get(key)
+}
+
 func (f *fiberContext) ResponseError(err error) error {
 	c := code.Extract(err)
 
