@@ -1,9 +1,10 @@
 package code
 
 import (
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -39,6 +40,8 @@ var (
 	RateLimitError    = "rate_limit_error"
 	PanicError        = "panic_error"
 	EncryptionError   = "encryption_error"
+	CacheError        = "cache_error"
+	CacheNotFound     = "cache_not_found"
 )
 
 func init() {
@@ -104,13 +107,26 @@ func init() {
 			HttpCode:        500,
 			GrpcCode:        13,
 		},
+		CacheError: {
+			CustomCode:      CacheError,
+			ResponseMessage: "something went wrong, will be fixed as soon as possible",
+			ErrorMessage:    "something went wrong with cache",
+			HttpCode:        500,
+			GrpcCode:        13,
+		},
+		CacheNotFound: {
+			CustomCode:      CacheNotFound,
+			ResponseMessage: "cache not found",
+			ErrorMessage:    "cache not found",
+			HttpCode:        404,
+			GrpcCode:        5,
+		},
 	}
 }
 
 func LoadCodes(path string) error {
-	//read file
+	// read file
 	f, err := os.ReadFile(path)
-
 	if err != nil {
 		panic(err)
 	}
@@ -119,12 +135,12 @@ func LoadCodes(path string) error {
 		Codes []Code `yaml:"codes"`
 	}{}
 
-	//unmarshal yaml file
+	// unmarshal yaml file
 	if err = yaml.Unmarshal(f, &e); err != nil {
 		return err
 	}
 
-	//save to map
+	// save to map
 	for _, code := range e.Codes {
 		AddCustomCode(code)
 	}
