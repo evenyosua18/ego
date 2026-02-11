@@ -73,6 +73,7 @@ func (a *app) RunRest() {
 		// trying to connect redis
 		redis, err := redis_adapter.NewRedisAdapter(redis_adapter.RedisConfig{
 			Addr:         appConfig.CacheConfig.Redis.Addr,
+			Password:     appConfig.CacheConfig.Redis.Password,
 			DB:           appConfig.CacheConfig.Redis.DB,
 			MaxRetries:   appConfig.CacheConfig.Redis.MaxRetries,
 			MinIdleConns: appConfig.CacheConfig.Redis.MinIdleConns,
@@ -84,6 +85,7 @@ func (a *app) RunRest() {
 			PoolTimeout:  appConfig.CacheConfig.Redis.PoolTimeout,
 		})
 		if err != nil {
+			fmt.Println(appConfig.CacheConfig.Redis.Addr)
 			panic(err)
 		}
 

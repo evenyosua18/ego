@@ -36,6 +36,7 @@ func NewRedisAdapter(config RedisConfig) (*RedisAdapter, error) {
 	// create new redis client
 	client := redis.NewClient(&redis.Options{
 		Addr:            config.Addr,
+		Password:        config.Password,
 		DB:              config.DB,
 		MaxRetries:      config.MaxRetries,
 		MinIdleConns:    config.MinIdleConns,

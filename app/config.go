@@ -71,6 +71,7 @@ const (
 	DefaultLoggerLevel = "info"
 
 	CacheRedisAddr         = "cache.redis.addr"
+	CacheRedisPassword     = "cache.redis.password"
 	CacheRedisDB           = "cache.redis.db"
 	CacheRedisMaxRetries   = "cache.redis.max_retries"
 	CacheRedisMinIdleConns = "cache.redis.min_idle_conns"
@@ -168,6 +169,7 @@ type (
 
 	Redis struct {
 		Addr         string
+		Password     string
 		DB           int
 		MaxRetries   int
 		MinIdleConns int
@@ -245,6 +247,7 @@ func (c *Config) build() {
 	c.CacheConfig = &Cache{
 		Redis: &Redis{
 			Addr:         c.getOrDefault(CacheRedisAddr, ""),
+			Password:     c.getOrDefault(CacheRedisPassword, ""),
 			DB:           c.getOrDefaultInt(CacheRedisDB, DefaultCacheRedisDB),
 			MaxRetries:   c.getOrDefaultInt(CacheRedisMaxRetries, DefaultCacheRedisMaxRetries),
 			MinIdleConns: c.getOrDefaultInt(CacheRedisMinIdleConns, DefaultCacheRedisMinIdleConns),
