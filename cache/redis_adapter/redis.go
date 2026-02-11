@@ -14,12 +14,45 @@ var (
 	ErrCache          = code.Get(code.CacheError)
 )
 
+type RedisConfig struct {
+	Addr         string
+	Password     string
+	DB           int
+	MaxRetries   int
+	MinIdleConns int
+	PoolSize     int
+	IdleTimeout  time.Duration
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+	DialTimeout  time.Duration
+	PoolTimeout  time.Duration
+}
+
 type RedisAdapter struct {
 	client *redis.Client
 }
 
-func NewRedisAdapter(client *redis.Client) *RedisAdapter {
-	return &RedisAdapter{client: client}
+func NewRedisAdapter(config RedisConfig) (*RedisAdapter, error) {
+	// create new redis client
+	client := redis.NewClient(&redis.Options{
+		Addr:            config.Addr,
+		DB:              config.DB,
+		MaxRetries:      config.MaxRetries,
+		MinIdleConns:    config.MinIdleConns,
+		PoolSize:        config.PoolSize,
+		ConnMaxIdleTime: config.IdleTimeout,
+		ReadTimeout:     config.ReadTimeout,
+		WriteTimeout:    config.WriteTimeout,
+		DialTimeout:     config.DialTimeout,
+		PoolTimeout:     config.PoolTimeout,
+	})
+
+	// check client
+	if err := client.Ping(context.Background()).Err(); err != nil {
+		return nil, code.Wrap(err, code.CacheError)
+	}
+
+	return &RedisAdapter{client: client}, nil
 }
 
 func (r *RedisAdapter) Get(ctx context.Context, key string) ([]byte, error) {

@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/evenyosua18/ego/cache"
+	"github.com/evenyosua18/ego/cache/redis_adapter"
 	"github.com/evenyosua18/ego/code"
 	"github.com/evenyosua18/ego/config"
 	"github.com/evenyosua18/ego/http"
@@ -64,6 +66,29 @@ func (a *app) RunRest() {
 
 		// set db connection
 		sqldb.SetDB(db)
+	}
+
+	// cache connection
+	if appConfig.CacheConfig.Redis != nil {
+		// trying to connect redis
+		redis, err := redis_adapter.NewRedisAdapter(redis_adapter.RedisConfig{
+			Addr:         appConfig.CacheConfig.Redis.Addr,
+			DB:           appConfig.CacheConfig.Redis.DB,
+			MaxRetries:   appConfig.CacheConfig.Redis.MaxRetries,
+			MinIdleConns: appConfig.CacheConfig.Redis.MinIdleConns,
+			PoolSize:     appConfig.CacheConfig.Redis.PoolSize,
+			IdleTimeout:  appConfig.CacheConfig.Redis.IdleTimeout,
+			ReadTimeout:  appConfig.CacheConfig.Redis.ReadTimeout,
+			WriteTimeout: appConfig.CacheConfig.Redis.WriteTimeout,
+			DialTimeout:  appConfig.CacheConfig.Redis.DialTimeout,
+			PoolTimeout:  appConfig.CacheConfig.Redis.PoolTimeout,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		// set to cache manager
+		cache.InitCacheManager(redis)
 	}
 
 	// get router

@@ -69,6 +69,27 @@ const (
 
 	LoggerLevel        = "logger.level"
 	DefaultLoggerLevel = "info"
+
+	CacheRedisAddr         = "cache.redis.addr"
+	CacheRedisDB           = "cache.redis.db"
+	CacheRedisMaxRetries   = "cache.redis.max_retries"
+	CacheRedisMinIdleConns = "cache.redis.min_idle_conns"
+	CacheRedisPoolSize     = "cache.redis.pool_size"
+	CacheRedisIdleTimeout  = "cache.redis.idle_timeout"
+	CacheRedisReadTimeout  = "cache.redis.read_timeout"
+	CacheRedisWriteTimeout = "cache.redis.write_timeout"
+	CacheRedisDialTimeout  = "cache.redis.dial_timeout"
+	CacheRedisPoolTimeout  = "cache.redis.pool_timeout"
+
+	DefaultCacheRedisDB           = 0
+	DefaultCacheRedisMaxRetries   = 3
+	DefaultCacheRedisMinIdleConns = 10
+	DefaultCacheRedisPoolSize     = 10
+	DefaultCacheRedisIdleTimeout  = 5 * time.Minute
+	DefaultCacheRedisReadTimeout  = 5 * time.Second
+	DefaultCacheRedisWriteTimeout = 5 * time.Second
+	DefaultCacheRedisDialTimeout  = 5 * time.Second
+	DefaultCacheRedisPoolTimeout  = 5 * time.Second
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
@@ -81,6 +102,7 @@ type (
 		TracerConfig   *Tracer
 		RouterConfig   *Router
 		LoggerConfig   *Logger
+		CacheConfig    *Cache
 	}
 
 	Code struct {
@@ -138,6 +160,23 @@ type (
 
 		// rate limit
 		MaxLimit int
+	}
+
+	Cache struct {
+		Redis *Redis
+	}
+
+	Redis struct {
+		Addr         string
+		DB           int
+		MaxRetries   int
+		MinIdleConns int
+		PoolSize     int
+		IdleTimeout  time.Duration
+		ReadTimeout  time.Duration
+		WriteTimeout time.Duration
+		DialTimeout  time.Duration
+		PoolTimeout  time.Duration
 	}
 )
 
@@ -200,6 +239,22 @@ func (c *Config) build() {
 		AllowCredentials: config.GetConfig().GetBool(RouterAllowCredentials),
 		DocPath:          c.getOrDefault(RouterDocPath, ""),
 		MaxConnection:    c.getOrDefaultInt(RouterMaxConnection, DefaultRouterMaxConnection),
+	}
+
+	// cache redis
+	c.CacheConfig = &Cache{
+		Redis: &Redis{
+			Addr:         c.getOrDefault(CacheRedisAddr, ""),
+			DB:           c.getOrDefaultInt(CacheRedisDB, DefaultCacheRedisDB),
+			MaxRetries:   c.getOrDefaultInt(CacheRedisMaxRetries, DefaultCacheRedisMaxRetries),
+			MinIdleConns: c.getOrDefaultInt(CacheRedisMinIdleConns, DefaultCacheRedisMinIdleConns),
+			PoolSize:     c.getOrDefaultInt(CacheRedisPoolSize, DefaultCacheRedisPoolSize),
+			IdleTimeout:  c.getOrDefaultDuration(CacheRedisIdleTimeout, DefaultCacheRedisIdleTimeout),
+			ReadTimeout:  c.getOrDefaultDuration(CacheRedisReadTimeout, DefaultCacheRedisReadTimeout),
+			WriteTimeout: c.getOrDefaultDuration(CacheRedisWriteTimeout, DefaultCacheRedisWriteTimeout),
+			DialTimeout:  c.getOrDefaultDuration(CacheRedisDialTimeout, DefaultCacheRedisDialTimeout),
+			PoolTimeout:  c.getOrDefaultDuration(CacheRedisPoolTimeout, DefaultCacheRedisPoolTimeout),
+		},
 	}
 
 	return
