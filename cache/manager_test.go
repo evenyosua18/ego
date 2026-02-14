@@ -50,7 +50,7 @@ func TestGetOrSet(t *testing.T) {
 		mockStore := new(MockStore)
 		mockStore.On("Get", ctx, key).Return(expectedBytes, nil)
 
-		cm := &cacheManager{store: mockStore}
+		cm := &CacheManager{store: mockStore}
 
 		val, err := GetOrSet(ctx, cm, key, ttl, func() (TestStruct, error) {
 			return TestStruct{}, errors.New("should not be called")
@@ -66,7 +66,7 @@ func TestGetOrSet(t *testing.T) {
 		mockStore.On("Get", ctx, key).Return(nil, ErrCacheMiss)
 		mockStore.On("Set", ctx, key, expectedBytes, ttl).Return(nil)
 
-		cm := &cacheManager{store: mockStore}
+		cm := &CacheManager{store: mockStore}
 
 		val, err := GetOrSet(ctx, cm, key, ttl, func() (TestStruct, error) {
 			return expectedVal, nil
@@ -81,7 +81,7 @@ func TestGetOrSet(t *testing.T) {
 		mockStore := new(MockStore)
 		mockStore.On("Get", ctx, key).Return(nil, ErrCacheMiss)
 
-		cm := &cacheManager{store: mockStore}
+		cm := &CacheManager{store: mockStore}
 		fetchErr := errors.New("fetch error")
 
 		val, err := GetOrSet(ctx, cm, key, ttl, func() (TestStruct, error) {
@@ -99,7 +99,7 @@ func TestGetOrSet(t *testing.T) {
 		cacheErr := errors.New("redis error")
 		mockStore.On("Get", ctx, key).Return(nil, cacheErr)
 
-		cm := &cacheManager{store: mockStore}
+		cm := &CacheManager{store: mockStore}
 
 		val, err := GetOrSet(ctx, cm, key, ttl, func() (TestStruct, error) {
 			return expectedVal, nil
@@ -117,7 +117,7 @@ func TestGetOrSet(t *testing.T) {
 		setErr := errors.New("set error")
 		mockStore.On("Set", ctx, key, expectedBytes, ttl).Return(setErr)
 
-		cm := &cacheManager{store: mockStore}
+		cm := &CacheManager{store: mockStore}
 
 		val, err := GetOrSet(ctx, cm, key, ttl, func() (TestStruct, error) {
 			return expectedVal, nil
@@ -134,7 +134,7 @@ func TestGetOrSet(t *testing.T) {
 		mockStore.On("Get", ctx, key).Return([]byte("{invalid-json"), nil)
 		mockStore.On("Set", ctx, key, expectedBytes, ttl).Return(nil)
 
-		cm := &cacheManager{store: mockStore}
+		cm := &CacheManager{store: mockStore}
 
 		val, err := GetOrSet(ctx, cm, key, ttl, func() (TestStruct, error) {
 			return expectedVal, nil
@@ -154,7 +154,7 @@ func TestInvalidate(t *testing.T) {
 	mockStore.On("Delete", ctx, "k1").Return(nil)
 	mockStore.On("Delete", ctx, "k2").Return(nil)
 
-	cm := &cacheManager{store: mockStore}
+	cm := &CacheManager{store: mockStore}
 	err := cm.Invalidate(ctx, keys...)
 
 	assert.NoError(t, err)

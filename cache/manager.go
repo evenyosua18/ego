@@ -12,31 +12,31 @@ import (
 
 var (
 	ErrCacheMiss = code.Get(code.CacheNotFound).SetErrorMessage("cache not found")
-	manager      *cacheManager
+	manager      *CacheManager
 	once         sync.Once
 )
 
-type cacheManager struct {
+type CacheManager struct {
 	store Store
 	group singleflight.Group
 }
 
 func InitCacheManager(store Store) {
 	once.Do(func() {
-		manager = &cacheManager{
+		manager = &CacheManager{
 			store: store,
 		}
 	})
 }
 
-func GetManager() *cacheManager {
+func GetManager() *CacheManager {
 	if manager == nil {
 		panic("cache manager is not initialized. call cache.InitCacheManager() first.")
 	}
 	return manager
 }
 
-func GetOrSet[T any](ctx context.Context, m *cacheManager, key string, ttl time.Duration, fetcher func() (T, error)) (T, error) {
+func GetOrSet[T any](ctx context.Context, m *CacheManager, key string, ttl time.Duration, fetcher func() (T, error)) (T, error) {
 	var zero T
 
 	// get from cache
@@ -75,7 +75,7 @@ func GetOrSet[T any](ctx context.Context, m *cacheManager, key string, ttl time.
 	return res.(T), nil
 }
 
-func (m *cacheManager) Invalidate(ctx context.Context, keys ...string) error {
+func (m *CacheManager) Invalidate(ctx context.Context, keys ...string) error {
 	for _, k := range keys {
 		_ = m.store.Delete(ctx, k)
 	}
