@@ -4,30 +4,40 @@ import (
 	"sort"
 )
 
-var (
-	groupRegistry = make(map[string]RouteFunc)
-)
-
 type (
 	RouteFunc func(router IHttpRouter)
+	RouteGroup struct {
+		Name     string
+		Handlers []any
+		RouteFns []RouteFunc
+	}
 )
 
-func RegisterRouteByGroup(group string, routeFns []RouteFunc) {
-	registerGroup := func(group string, fn func(IHttpRouter)) {
-		groupRegistry[group] = fn
+var (
+	groupRegistry = make(map[string]RouteGroup)
+)
+
+func RegisterRouteByGroup(group string, routeFns []RouteFunc, handlers ...any) {
+	registerGroup := func(group string, fn []RouteFunc, handlers []any) {
+		groupRegistry[group] = RouteGroup{
+			Name:     group,
+			Handlers: handlers,
+			RouteFns: fn,
+		}
 	}
 
-	registerGroup(group, func(r IHttpRouter) {
-		for _, fn := range routeFns {
-			fn(r)
-		}
-	})
+	registerGroup(group, routeFns, handlers)
 }
 
 func RegisterRoutes(r IHttpRouter) {
 	// always register public routes first if available
-	if fn, ok := groupRegistry["public"]; ok {
-		fn(r.Group("/"))
+	if g, ok := groupRegistry["public"]; ok {
+		// prepend group name to handlers
+		handlers := append([]any{"public"}, g.Handlers...)
+		routerGroup := r.Group("/", handlers...)
+		for _, fn := range g.RouteFns {
+			fn(routerGroup)
+		}
 	}
 
 	// map groups, except public
@@ -43,6 +53,11 @@ func RegisterRoutes(r IHttpRouter) {
 
 	// loop based on sorted group name
 	for _, groupName := range groups {
-		groupRegistry[groupName](r.Group("/" + groupName))
+		g := groupRegistry[groupName]
+		handlers := append([]any{groupName}, g.Handlers...)
+		routerGroup := r.Group("/"+groupName, handlers...)
+		for _, fn := range g.RouteFns {
+			fn(routerGroup)
+		}
 	}
 }

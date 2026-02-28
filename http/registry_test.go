@@ -14,7 +14,7 @@ func TestRegisterRoutes(t *testing.T) {
 		{
 			name: "route under group",
 			setup: func() {
-				groupRegistry = map[string]RouteFunc{}
+				groupRegistry = map[string]RouteGroup{}
 				RegisterRouteByGroup("test", []RouteFunc{
 					func(r IHttpRouter) {
 						r.Delete("/test", nil)
@@ -22,26 +22,28 @@ func TestRegisterRoutes(t *testing.T) {
 				})
 			},
 			expectedLogs: []string{
+				"GROUP /test AS test",
 				"DELETE /test/test",
 			},
 		},
 		{
 			name: "single public route",
 			setup: func() {
-				groupRegistry = map[string]RouteFunc{}
+				groupRegistry = map[string]RouteGroup{}
 
 				RegisterRouteByGroup("public", []RouteFunc{
 					func(r IHttpRouter) { r.Get("/ping", nil) },
 				})
 			},
 			expectedLogs: []string{
+				"GROUP / AS public",
 				"GET /ping",
 			},
 		},
 		{
 			name: "public and admin routes",
 			setup: func() {
-				groupRegistry = map[string]RouteFunc{} // reset
+				groupRegistry = map[string]RouteGroup{} // reset
 				RegisterRouteByGroup("public", []RouteFunc{
 					func(r IHttpRouter) { r.Get("/health", nil) },
 				})
@@ -50,20 +52,22 @@ func TestRegisterRoutes(t *testing.T) {
 				})
 			},
 			expectedLogs: []string{
+				"GROUP / AS public",
 				"GET /health",
+				"GROUP /admin AS admin",
 				"POST /admin/create",
 			},
 		},
 		{
 			name: "multiple groups sorted",
 			setup: func() {
-				groupRegistry = map[string]RouteFunc{} // reset
+				groupRegistry = map[string]RouteGroup{} // reset
 				RegisterRouteByGroup("public", []RouteFunc{
 					func(r IHttpRouter) { r.Delete("/test", nil) },
 				})
 				RegisterRouteByGroup("cms", []RouteFunc{
 					func(r IHttpRouter) { r.Put("/test", nil) },
-				})
+				}, "middleware1", "middleware2")
 				RegisterRouteByGroup("svc", []RouteFunc{
 					func(r IHttpRouter) { r.Put("/test", nil) },
 					func(r IHttpRouter) { r.Get("/test", nil) },
@@ -73,8 +77,13 @@ func TestRegisterRoutes(t *testing.T) {
 				})
 			},
 			expectedLogs: []string{
+				"GROUP / AS public",
 				"DELETE /test",
+				"GROUP /cms AS cms",
+				"GROUP /cms AS middleware1",
+				"GROUP /cms AS middleware2",
 				"PUT /cms/test",
+				"GROUP /svc AS svc",
 				"PUT /svc/test",
 				"GET /svc/test",
 				"DELETE /svc/test",

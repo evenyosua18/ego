@@ -1,5 +1,7 @@
 package http
 
+import "time"
+
 type RouteConfig struct {
 	MaxConnection       int
 	MainPrefix          string
@@ -8,6 +10,11 @@ type RouteConfig struct {
 	CORS                CORSConfig
 	Doc                 DocumentationConfig
 	RateLimit           RateLimitConfig
+	DisableAuthChecker  bool
+
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+	IdleTimeout  time.Duration
 }
 
 type CORSConfig struct {

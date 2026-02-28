@@ -13,31 +13,29 @@ import (
 )
 
 type Router struct {
-	app fiber.Router
+	app                fiber.Router
+	DisableAuthChecker bool
+	routeGroup         string
 }
 
 func NewRouter(cfg RouteConfig) *Router {
 	// set fiber configs
-	var fiberConfigs []fiber.Config
+	fiberConfig := fiber.Config{
+		Concurrency:  cfg.MaxConnection,
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
+		IdleTimeout:  cfg.IdleTimeout,
+	}
 
 	// set html engine to fiber configs
 	if cfg.HtmlPath != "" {
 		// register html
 		engine := html.New(cfg.HtmlPath, ".html")
-
-		// set fiber configs
-		fiberConfigs = append(fiberConfigs, fiber.Config{
-			Views: engine,
-		})
+		fiberConfig.Views = engine
 	}
 
-	// set throttle
-	fiberConfigs = append(fiberConfigs, fiber.Config{
-		Concurrency: cfg.MaxConnection,
-	})
-
 	// route
-	fiberApp := fiber.New(fiberConfigs...)
+	fiberApp := fiber.New(fiberConfig)
 
 	// setup documentation
 	if cfg.Doc.Path != "" {
@@ -126,10 +124,28 @@ func (r *Router) ShutdownWithContext(ctx context.Context) error {
 	return r.app.(*fiber.App).ShutdownWithContext(ctx)
 }
 
-func (r *Router) wrap(handler RouteHandler) fiber.Handler {
+func (r *Router) ActiveConnections() int {
+	if fiberApp, ok := r.app.(*fiber.App); ok {
+		return int(fiberApp.Server().GetOpenConnectionsCount())
+	}
+	return 0
+}
+
+func (r *Router) wrap(handler RouteHandler, opts []RouterFuncOption) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// setup context
 		fiberCtx := fiberContext{ctx: c}
+
+		// apply options
+		reqOpt := &RouterOptions{}
+		for _, opt := range opts {
+			opt(reqOpt)
+		}
+
+		// auth validation
+		if !r.DisableAuthChecker {
+			// TODO should check the given access token
+		}
 
 		// get http data
 		data, opName := fiberCtx.HttpData()
@@ -143,25 +159,44 @@ func (r *Router) wrap(handler RouteHandler) fiber.Handler {
 }
 
 func (r *Router) Get(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Get(path, r.wrap(h))
+	r.app.Get(path, r.wrap(h, opts))
 }
 
 func (r *Router) Post(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Post(path, r.wrap(h))
+	r.app.Post(path, r.wrap(h, opts))
 }
 
 func (r *Router) Put(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Put(path, r.wrap(h))
+	r.app.Put(path, r.wrap(h, opts))
 }
 
 func (r *Router) Delete(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Delete(path, r.wrap(h))
+	r.app.Delete(path, r.wrap(h, opts))
 }
 
 func (r *Router) Patch(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Patch(path, r.wrap(h))
+	r.app.Patch(path, r.wrap(h, opts))
 }
 
-func (r *Router) Group(prefix string) IHttpRouter {
-	return &Router{app: r.app.Group(prefix)}
+func (r *Router) Group(prefix string, handlers ...any) IHttpRouter {
+	routeGroup := r.routeGroup
+	var fiberHandlers []fiber.Handler
+
+	if len(handlers) > 0 {
+		for _, handler := range handlers {
+			if name, ok := handler.(string); ok {
+				routeGroup = name
+			} else if fh, ok := handler.(fiber.Handler); ok {
+				fiberHandlers = append(fiberHandlers, fh)
+			} else if fh, ok := handler.(func(fiber.Ctx) error); ok {
+				fiberHandlers = append(fiberHandlers, fh)
+			}
+		}
+	}
+
+	return &Router{
+		app:                r.app.Group(prefix, fiberHandlers...),
+		DisableAuthChecker: r.DisableAuthChecker,
+		routeGroup:         routeGroup,
+	}
 }

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -98,6 +99,10 @@ func (a *app) RunRest() {
 		MainPrefix:          appConfig.RouterConfig.Prefix,
 		ShowRegisteredRoute: appConfig.RouterConfig.ShowRegistered,
 		HtmlPath:            appConfig.RouterConfig.HtmlPath,
+		DisableAuthChecker:  appConfig.RouterConfig.DisableAuthChecker,
+		ReadTimeout:         appConfig.RouterConfig.ReadTimeout,
+		WriteTimeout:        appConfig.RouterConfig.WriteTimeout,
+		IdleTimeout:         appConfig.RouterConfig.IdleTimeout,
 		CORS: http.CORSConfig{
 			AllowOrigins:     appConfig.RouterConfig.AllowOrigins,
 			AllowMethods:     appConfig.RouterConfig.AllowMethods,
@@ -124,13 +129,18 @@ func (a *app) RunRest() {
 	}()
 
 	<-quit
-	fmt.Println("Shutting down server...")
+	logger.Info("Shutting down server...")
+	logger.Info(fmt.Sprintf("Active connections: %d", a.httpRouter.ActiveConnections()))
 
 	ctx, cancel := context.WithTimeout(context.Background(), appConfig.AppConfig.ShutdownTimeout) // 5s timeout
 	defer cancel()
 
 	if err := a.httpRouter.ShutdownWithContext(ctx); err != nil {
-		panic(fmt.Sprintf("Server forced to shutdown: %v", err))
+		log.Printf("Server forced to shutdown: %v", err)
+		os.Exit(0)
+	} else {
+		log.Println("Cleanup finished. Exiting...")
+		os.Exit(0)
 	}
 }
 

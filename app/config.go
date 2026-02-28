@@ -51,21 +51,28 @@ const (
 	DefaultTracerSampleRate = 1.0
 	DefaultTracerFlushTime  = "1"
 
-	RouterPrefix           = "router.prefix"
-	RouterPort             = "router.port"
-	RouterShowRegistered   = "router.show_registered"
-	RouterHtmlPath         = "router.html_path"
-	RouterAllowOrigins     = "router.allow_origins"
-	RouterAllowMethods     = "router.allow_methods"
-	RouterAllowHeaders     = "router.allow_headers"
-	RouterAllowCredentials = "router.allow_credentials"
-	RouterDocPath          = "router.doc_path"
-	RouterMaxConnection    = "router.max_connection"
-	RouterMaxLimit         = "router.rate_limit.max_limit"
+	RouterPrefix             = "router.prefix"
+	RouterPort               = "router.port"
+	RouterShowRegistered     = "router.show_registered"
+	RouterHtmlPath           = "router.html_path"
+	RouterAllowOrigins       = "router.allow_origins"
+	RouterAllowMethods       = "router.allow_methods"
+	RouterAllowHeaders       = "router.allow_headers"
+	RouterAllowCredentials   = "router.allow_credentials"
+	RouterDocPath            = "router.doc_path"
+	RouterMaxConnection      = "router.max_connection"
+	RouterMaxLimit           = "router.rate_limit.max_limit"
+	RouterDisableAuthChecker = "router.disable_auth_checker"
+	RouterReadTimeout        = "router.read_timeout"
+	RouterWriteTimeout       = "router.write_timeout"
+	RouterIdleTimeout        = "router.idle_timeout"
 
 	DefaultRouterPort          = ":8080"
 	DefaultRouterMaxLimit      = 100
 	DefaultRouterMaxConnection = 5000
+	DefaultRouterReadTimeout   = 30 * time.Second
+	DefaultRouterWriteTimeout  = 0
+	DefaultRouterIdleTimeout   = 0
 
 	LoggerLevel        = "logger.level"
 	DefaultLoggerLevel = "info"
@@ -144,11 +151,12 @@ type (
 	}
 
 	Router struct {
-		Prefix         string
-		Port           string
-		ShowRegistered bool
-		HtmlPath       string
-		MaxConnection  int
+		Prefix             string
+		Port               string
+		ShowRegistered     bool
+		HtmlPath           string
+		MaxConnection      int
+		DisableAuthChecker bool
 
 		// CORS
 		AllowOrigins     []string
@@ -161,6 +169,11 @@ type (
 
 		// rate limit
 		MaxLimit int
+
+		// connection timeout
+		ReadTimeout  time.Duration
+		WriteTimeout time.Duration
+		IdleTimeout  time.Duration
 	}
 
 	Cache struct {
@@ -230,17 +243,21 @@ func (c *Config) build() {
 
 	// route
 	c.RouterConfig = &Router{
-		MaxLimit:         c.getOrDefaultInt(RouterMaxLimit, DefaultRouterMaxLimit),
-		Prefix:           normalizeRoutePrefix(c.getOrDefault(RouterPrefix, "")),
-		Port:             normalizePort(c.getOrDefault(RouterPort, DefaultRouterPort)),
-		ShowRegistered:   config.GetConfig().GetBool(RouterShowRegistered), // if not true or 1, will return false, no need to set default value anymore
-		HtmlPath:         c.getOrDefault(RouterHtmlPath, ""),
-		AllowOrigins:     config.GetConfig().GetStringSlice(RouterAllowOrigins),
-		AllowMethods:     config.GetConfig().GetStringSlice(RouterAllowMethods),
-		AllowHeaders:     config.GetConfig().GetStringSlice(RouterAllowHeaders),
-		AllowCredentials: config.GetConfig().GetBool(RouterAllowCredentials),
-		DocPath:          c.getOrDefault(RouterDocPath, ""),
-		MaxConnection:    c.getOrDefaultInt(RouterMaxConnection, DefaultRouterMaxConnection),
+		MaxLimit:           c.getOrDefaultInt(RouterMaxLimit, DefaultRouterMaxLimit),
+		Prefix:             normalizeRoutePrefix(c.getOrDefault(RouterPrefix, "")),
+		Port:               normalizePort(c.getOrDefault(RouterPort, DefaultRouterPort)),
+		ShowRegistered:     config.GetConfig().GetBool(RouterShowRegistered), // if not true or 1, will return false, no need to set default value anymore
+		HtmlPath:           c.getOrDefault(RouterHtmlPath, ""),
+		AllowOrigins:       config.GetConfig().GetStringSlice(RouterAllowOrigins),
+		AllowMethods:       config.GetConfig().GetStringSlice(RouterAllowMethods),
+		AllowHeaders:       config.GetConfig().GetStringSlice(RouterAllowHeaders),
+		AllowCredentials:   config.GetConfig().GetBool(RouterAllowCredentials),
+		DocPath:            c.getOrDefault(RouterDocPath, ""),
+		DisableAuthChecker: config.GetConfig().GetBool(RouterDisableAuthChecker),
+		MaxConnection:      c.getOrDefaultInt(RouterMaxConnection, DefaultRouterMaxConnection),
+		ReadTimeout:        c.getOrDefaultDuration(RouterReadTimeout, DefaultRouterReadTimeout),
+		WriteTimeout:       c.getOrDefaultDuration(RouterWriteTimeout, DefaultRouterWriteTimeout),
+		IdleTimeout:        c.getOrDefaultDuration(RouterIdleTimeout, DefaultRouterIdleTimeout),
 	}
 
 	// cache redis

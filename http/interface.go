@@ -14,10 +14,11 @@ type IHttpRouter interface {
 	Delete(path string, handler RouteHandler, opts ...RouterFuncOption)
 	Patch(path string, handler RouteHandler, opts ...RouterFuncOption)
 
-	Group(prefix string) IHttpRouter
+	Group(prefix string, handlers ...any) IHttpRouter
 	Listen(port string) error
 	Shutdown() error
 	ShutdownWithContext(ctx context.Context) error
+	ActiveConnections() int
 }
 
 type Context interface {
