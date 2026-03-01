@@ -38,8 +38,11 @@ type ISQLExecutor interface {
 	Exec(query string, args ...any) (ISqlResult, error)
 }
 
+type WrappedTrxHandler func(ctx context.Context) error
+
 type IDbManager interface {
 	GetExecutor(ctx context.Context) (ISQLExecutor, error)
 	BeginTx(ctx context.Context) (ISqlTx, context.Context, error)
+	WrappedBeginTrx(ctx context.Context, handler WrappedTrxHandler) error
 	SetDBContext(ctx context.Context) (context.Context, error)
 }

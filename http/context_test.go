@@ -3,11 +3,12 @@ package http
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gofiber/fiber/v3"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func TestFiberContext(t *testing.T) {
@@ -59,6 +60,15 @@ func TestFiberContext(t *testing.T) {
 					expectedBody := []byte(`{"message":"hello"}`)
 					if got := ctx.Body(); !bytes.Equal(got, expectedBody) {
 						t.Errorf("Body() = %s, want %s", string(got), string(expectedBody))
+					}
+
+					// SetContext and GetContext
+					ctx.SetContext("test-key", "test-value")
+					if got := c.Locals("test-key"); got != "test-value" {
+						t.Errorf("Locals() = %v, want %v", got, "test-value")
+					}
+					if got := ctx.GetContext("test-key"); got != "test-value" {
+						t.Errorf("GetContext() = %v, want %v", got, "test-value")
 					}
 
 					// Respond with JSON

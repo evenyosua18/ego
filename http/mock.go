@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"net/http"
 )
 
 type HttpRouter struct {
@@ -28,6 +29,10 @@ func (m *HttpRouter) Delete(path string, _ RouteHandler, opts ...RouterFuncOptio
 
 func (m *HttpRouter) Patch(path string, _ RouteHandler, opts ...RouterFuncOption) {
 	*m.Calls = append(*m.Calls, fmt.Sprintf("PATCH %s", m.fullPath(path)))
+}
+
+func (m *HttpRouter) Use(args ...any) IHttpRouter {
+	return m
 }
 
 func (m *HttpRouter) Group(prefix string, handlers ...any) IHttpRouter {
@@ -62,6 +67,11 @@ func (m *HttpRouter) ShutdownWithContext(ctx context.Context) error {
 
 func (m *HttpRouter) ActiveConnections() int {
 	return 0
+}
+
+func (m *HttpRouter) Test(req *http.Request) (*http.Response, error) {
+	*m.Calls = append(*m.Calls, "TEST")
+	return nil, nil
 }
 
 func (m *HttpRouter) fullPath(path string) string {

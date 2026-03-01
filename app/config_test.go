@@ -143,6 +143,9 @@ func TestConfig_build(t *testing.T) {
 					DocPath:          "/docs",
 					MaxConnection:    1000,
 					MaxLimit:         50,
+					ReadTimeout:      30 * time.Second,
+					WriteTimeout:     0,
+					IdleTimeout:      0,
 				},
 				LoggerConfig: &Logger{
 					Level: "debug",
@@ -209,6 +212,9 @@ func TestConfig_build(t *testing.T) {
 					DocPath:          "",
 					MaxConnection:    DefaultRouterMaxConnection,
 					MaxLimit:         DefaultRouterMaxLimit,
+					ReadTimeout:      DefaultRouterReadTimeout,
+					WriteTimeout:     DefaultRouterWriteTimeout,
+					IdleTimeout:      DefaultRouterIdleTimeout,
 				},
 				LoggerConfig: &Logger{
 					Level: DefaultLoggerLevel,

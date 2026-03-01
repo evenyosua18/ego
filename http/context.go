@@ -197,3 +197,15 @@ func (f *fiberContext) Render(name string, data map[string]any) error {
 func (f *fiberContext) FormValue(key string) string {
 	return f.ctx.FormValue(key)
 }
+
+func (f *fiberContext) SetContext(key any, value any) {
+	f.ctx.Locals(key, value)
+}
+
+func (f *fiberContext) GetContext(key any) any {
+	return f.ctx.Locals(key)
+}
+
+func (f *fiberContext) Next() error {
+	return f.ctx.Next()
+}

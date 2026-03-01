@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"net/http"
 	"time"
 )
 
@@ -14,11 +15,13 @@ type IHttpRouter interface {
 	Delete(path string, handler RouteHandler, opts ...RouterFuncOption)
 	Patch(path string, handler RouteHandler, opts ...RouterFuncOption)
 
+	Use(args ...any) IHttpRouter
 	Group(prefix string, handlers ...any) IHttpRouter
 	Listen(port string) error
 	Shutdown() error
 	ShutdownWithContext(ctx context.Context) error
 	ActiveConnections() int
+	Test(req *http.Request) (*http.Response, error)
 }
 
 type Context interface {
@@ -44,4 +47,7 @@ type Context interface {
 
 	Render(name string, data map[string]any) error
 	FormValue(key string) string
+	SetContext(key any, value any)
+	GetContext(key any) any
+	Next() error
 }

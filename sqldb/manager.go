@@ -3,6 +3,7 @@ package sqldb
 import (
 	"context"
 	"fmt"
+
 	"github.com/evenyosua18/ego/code"
 )
 
@@ -36,14 +37,12 @@ func (s *DbManager) GetExecutor(ctx context.Context) (ISQLExecutor, error) {
 func (s *DbManager) BeginTx(ctx context.Context) (ISqlTx, context.Context, error) {
 	// get sql db
 	sqlDb, err := GetDB()
-
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// begin tx
 	tx, err := sqlDb.Begin()
-
 	if err != nil {
 		return nil, nil, code.Wrap(err, code.DatabaseError)
 	}
@@ -57,7 +56,6 @@ func (s *DbManager) BeginTx(ctx context.Context) (ISqlTx, context.Context, error
 func (s *DbManager) SetDBContext(ctx context.Context) (context.Context, error) {
 	// prevent empty db
 	sqlDb, err := GetDB()
-
 	if err != nil {
 		return nil, err
 	}
@@ -65,6 +63,16 @@ func (s *DbManager) SetDBContext(ctx context.Context) (context.Context, error) {
 	newCtx := context.WithValue(ctx, dbKey{}, sqlDb)
 
 	return newCtx, nil
+}
+
+func (s *DbManager) WrappedBeginTrx(ctx context.Context, handler WrappedTrxHandler) (err error) {
+	tx, newCtx, errBegin := s.BeginTx(ctx)
+	if errBegin != nil {
+		return errBegin
+	}
+	defer tx.EndTx(&err)
+
+	return handler(newCtx)
 }
 
 func GetDbManager() IDbManager {

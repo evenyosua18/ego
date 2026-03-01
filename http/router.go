@@ -3,6 +3,7 @@ package http
 import (
 	"context" // Added for ShutdownWithContext
 	"fmt"
+	"net/http"
 
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/evenyosua18/ego/tracer"
@@ -131,16 +132,23 @@ func (r *Router) ActiveConnections() int {
 	return 0
 }
 
-func (r *Router) wrap(handler RouteHandler, opts []RouterFuncOption) fiber.Handler {
-	return func(c fiber.Ctx) error {
+func (r *Router) Test(req *http.Request) (*http.Response, error) {
+	if fiberApp, ok := r.app.(*fiber.App); ok {
+		return fiberApp.Test(req)
+	}
+	return nil, fmt.Errorf("router is not a fiber app")
+}
+
+func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Handler, []fiber.Handler) {
+	// apply options
+	reqOpt := &RouterOptions{}
+	for _, opt := range opts {
+		opt(reqOpt)
+	}
+
+	handler := func(c fiber.Ctx) error {
 		// setup context
 		fiberCtx := fiberContext{ctx: c}
-
-		// apply options
-		reqOpt := &RouterOptions{}
-		for _, opt := range opts {
-			opt(reqOpt)
-		}
 
 		// auth validation
 		if !r.DisableAuthChecker {
@@ -154,28 +162,45 @@ func (r *Router) wrap(handler RouteHandler, opts []RouterFuncOption) fiber.Handl
 		sp := tracer.StartSpan(c.Context(), opName, tracer.WithAttributes(data))
 		defer sp.End()
 
-		return handler(&fiberCtx)
+		return h(&fiberCtx)
 	}
+
+	return handler, reqOpt.Middlewares
 }
 
 func (r *Router) Get(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Get(path, r.wrap(h, opts))
+	handler, middlewares := r.extractWrap(h, opts)
+	middlewares = append(middlewares, handler)
+	r.app.Get(path, middlewares[0], middlewares[1:]...)
 }
 
 func (r *Router) Post(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Post(path, r.wrap(h, opts))
+	handler, middlewares := r.extractWrap(h, opts)
+	middlewares = append(middlewares, handler)
+	r.app.Post(path, middlewares[0], middlewares[1:]...)
 }
 
 func (r *Router) Put(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Put(path, r.wrap(h, opts))
+	handler, middlewares := r.extractWrap(h, opts)
+	middlewares = append(middlewares, handler)
+	r.app.Put(path, middlewares[0], middlewares[1:]...)
 }
 
 func (r *Router) Delete(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Delete(path, r.wrap(h, opts))
+	handler, middlewares := r.extractWrap(h, opts)
+	middlewares = append(middlewares, handler)
+	r.app.Delete(path, middlewares[0], middlewares[1:]...)
 }
 
 func (r *Router) Patch(path string, h RouteHandler, opts ...RouterFuncOption) {
-	r.app.Patch(path, r.wrap(h, opts))
+	handler, middlewares := r.extractWrap(h, opts)
+	middlewares = append(middlewares, handler)
+	r.app.Patch(path, middlewares[0], middlewares[1:]...)
+}
+
+func (r *Router) Use(args ...any) IHttpRouter {
+	r.app.Use(args...)
+	return r
 }
 
 func (r *Router) Group(prefix string, handlers ...any) IHttpRouter {
