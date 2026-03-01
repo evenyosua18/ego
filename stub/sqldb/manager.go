@@ -2,6 +2,7 @@ package sqldb
 
 import (
 	"context"
+
 	"github.com/evenyosua18/ego/sqldb"
 )
 
@@ -32,6 +33,9 @@ type StubDbManager struct {
 
 	// set db context error
 	SetDBContextErr error
+
+	// wrapped begin trx error
+	WrappedBeginTrxErr error
 
 	StubExecutor
 }
@@ -119,4 +123,12 @@ func (s *StubDbManager) SetDBContext(ctx context.Context) (context.Context, erro
 	}
 
 	return ctx, nil
+}
+
+func (s *StubDbManager) WrappedBeginTrx(ctx context.Context, handler sqldb.WrappedTrxHandler) error {
+	if s.WrappedBeginTrxErr != nil {
+		return s.WrappedBeginTrxErr
+	}
+
+	return handler(ctx)
 }
