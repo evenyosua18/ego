@@ -84,7 +84,7 @@ func TestRouter_Methods(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup router
 			app := fiber.New()
-			router := &Router{app: app}
+			router := &Router{app: app, DisableAuthChecker: true}
 			tt.registerFn(router)
 
 			// setup new request
@@ -117,7 +117,7 @@ func TestRouter_Methods(t *testing.T) {
 func TestRouter_Group(t *testing.T) {
 	// setup router
 	app := fiber.New()
-	r := &Router{app: app}
+	r := &Router{app: app, DisableAuthChecker: true}
 
 	group := r.Group("/api")
 	group.Get("/hello", func(c Context) error {

@@ -199,7 +199,6 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 				break
 			}
 
-			return nil
 		}
 
 		// get http data
