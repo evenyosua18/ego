@@ -210,7 +210,11 @@ func (f *fiberContext) Next() error {
 	return f.ctx.Next()
 }
 
-// this is to define variables that parsed through the local context
+// this is to define variables or functions that parsed through the local context
 type (
-	LocalRouteRoles struct{}
+	localRouteRoles struct{}
 )
+
+func (f *fiberContext) GetRouteRoles() []string {
+	return f.ctx.Locals(localRouteRoles{}).([]string)
+}

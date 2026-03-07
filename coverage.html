@@ -1,0 +1,842 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>http: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/evenyosua18/ego/http/context.go (39.7%)</option>
+				
+				<option value="file1">github.com/evenyosua18/ego/http/mock.go (0.0%)</option>
+				
+				<option value="file2">github.com/evenyosua18/ego/http/options.go (0.0%)</option>
+				
+				<option value="file3">github.com/evenyosua18/ego/http/registry.go (0.0%)</option>
+				
+				<option value="file4">github.com/evenyosua18/ego/http/router.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package http
+
+import (
+        "context"
+        "encoding/json"
+        "net/http"
+        "reflect"
+        "strconv"
+        "strings"
+        "time"
+
+        "github.com/evenyosua18/ego/code"
+        fiber "github.com/gofiber/fiber/v3"
+)
+
+type fiberContext struct {
+        ctx fiber.Ctx
+}
+
+func (f *fiberContext) Param(key string) string <span class="cov0" title="0">{
+        return f.ctx.Params(key)
+}</span>
+
+func (f *fiberContext) Query(key string) string <span class="cov0" title="0">{
+        return f.ctx.Query(key)
+}</span>
+
+func (f *fiberContext) Body() []byte <span class="cov0" title="0">{
+        return f.ctx.Body()
+}</span>
+
+func (f *fiberContext) RequestBody(res any) error <span class="cov0" title="0">{
+        return json.Unmarshal(f.ctx.Body(), &amp;res)
+}</span>
+
+func (f *fiberContext) Send(status int, body []byte) error <span class="cov0" title="0">{
+        return f.ctx.Status(status).Send(body)
+}</span>
+
+func (f *fiberContext) JSON(status int, data any) error <span class="cov0" title="0">{
+        return f.ctx.Status(status).JSON(data)
+}</span>
+
+func (f *fiberContext) Context() context.Context <span class="cov0" title="0">{
+        return f.ctx.Context()
+}</span>
+
+func (f *fiberContext) GetRequestHeader(key string) string <span class="cov0" title="0">{
+        return f.ctx.Get(key)
+}</span>
+
+func (f *fiberContext) ResponseError(err error) error <span class="cov0" title="0">{
+        c := code.Extract(err)
+
+        return f.ctx.Status(c.HttpCode).JSON(c)
+}</span>
+
+func (f *fiberContext) ResponseSuccess(data any) error <span class="cov0" title="0">{
+        return f.ctx.Status(200).JSON(data)
+}</span>
+
+func (f *fiberContext) HttpData() (data map[string]any, operationName string) <span class="cov0" title="0">{
+        return map[string]any{
+                "method":     f.ctx.Method(),
+                "path":       f.ctx.Path(),
+                "query":      f.ctx.Queries(),
+                "ip_address": f.ctx.IP(),
+                "body":       truncate(f.ctx.Get("Content-Type"), f.ctx.Body()),
+        }, strings.ToUpper(f.ctx.Method()) + " " + f.ctx.Path()
+}</span>
+
+const (
+        maxLogLength = 2048
+
+        truncatedText     = "...(truncated)"
+        unableMarshalText = "&lt;&lt;unable to marshal object&gt;&gt;"
+        omittedFileText   = "&lt;&lt;file omitted&gt;&gt;"
+)
+
+func truncate(contentType string, obj any) string <span class="cov0" title="0">{
+        if !strings.HasPrefix(contentType, "application/json") &amp;&amp;
+                !strings.HasPrefix(contentType, "application/x-www-form-urlencoded") </span><span class="cov0" title="0">{
+                return omittedFileText
+        }</span>
+
+        <span class="cov0" title="0">switch v := obj.(type) </span>{
+        case string:<span class="cov0" title="0">
+                if len(v) &gt; maxLogLength </span><span class="cov0" title="0">{
+                        return v[:maxLogLength] + truncatedText
+                }</span>
+                <span class="cov0" title="0">return v</span>
+        case []byte:<span class="cov0" title="0">
+                if len(v) &gt; maxLogLength </span><span class="cov0" title="0">{
+                        return string(v[:maxLogLength]) + truncatedText
+                }</span>
+                <span class="cov0" title="0">return string(v)</span>
+        }
+
+        // Marshal to JSON for structured types
+        <span class="cov0" title="0">jsonBytes, err := json.Marshal(obj)
+        if err != nil </span><span class="cov0" title="0">{
+                return unableMarshalText
+        }</span>
+
+        <span class="cov0" title="0">if len(jsonBytes) &gt; maxLogLength </span><span class="cov0" title="0">{
+                return string(jsonBytes[:maxLogLength]) + truncatedText
+        }</span>
+
+        <span class="cov0" title="0">return string(jsonBytes)</span>
+}
+
+func (f *fiberContext) BindQuery(destination any) error <span class="cov8" title="1">{
+        v := reflect.ValueOf(destination)
+        if v.Kind() != reflect.Pointer || v.IsNil() </span><span class="cov8" title="1">{
+                return code.Get(code.BadRequestError).SetErrorMessage("destination must be a non-nil pointer to struct")
+        }</span>
+
+        <span class="cov8" title="1">v = v.Elem()
+        if v.Kind() != reflect.Struct </span><span class="cov8" title="1">{
+                return code.Get(code.BadRequestError).SetErrorMessage("destination must point to a struct")
+        }</span>
+
+        <span class="cov8" title="1">t := v.Type()
+
+        for i := 0; i &lt; t.NumField(); i++ </span><span class="cov8" title="1">{
+                field := t.Field(i)
+                fieldVal := v.Field(i)
+
+                // Skip unexported fields
+                if !fieldVal.CanSet() </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">tag := field.Tag.Get("query")
+                if tag == "" </span><span class="cov0" title="0">{
+                        tag = field.Name
+                }</span>
+
+                <span class="cov8" title="1">val := f.ctx.Query(tag)
+                if val == "" </span><span class="cov8" title="1">{
+                        continue</span> // skip empty
+                }
+
+                <span class="cov8" title="1">switch fieldVal.Kind() </span>{
+                case reflect.String:<span class="cov8" title="1">
+                        fieldVal.SetString(val)</span>
+                case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:<span class="cov8" title="1">
+                        if i, err := strconv.ParseInt(val, 10, 64); err == nil </span><span class="cov8" title="1">{
+                                fieldVal.SetInt(i)
+                        }</span>
+                case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:<span class="cov8" title="1">
+                        if u, err := strconv.ParseUint(val, 10, 64); err == nil </span><span class="cov8" title="1">{
+                                fieldVal.SetUint(u)
+                        }</span>
+                case reflect.Float32, reflect.Float64:<span class="cov8" title="1">
+                        if f, err := strconv.ParseFloat(val, 64); err == nil </span><span class="cov8" title="1">{
+                                fieldVal.SetFloat(f)
+                        }</span>
+                case reflect.Bool:<span class="cov8" title="1">
+                        if b, err := strconv.ParseBool(val); err == nil </span><span class="cov8" title="1">{
+                                fieldVal.SetBool(b)
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (f *fiberContext) Cookie(name string, defaultValue ...string) string <span class="cov0" title="0">{
+        return f.ctx.Cookies(name, defaultValue...)
+}</span>
+
+func (f *fiberContext) SetCookie(name, value string, expiredAt time.Time) <span class="cov0" title="0">{
+        f.ctx.Cookie(&amp;fiber.Cookie{
+                Expires:  expiredAt,
+                Name:     name,
+                Value:    value,
+                Path:     "/",
+                SameSite: fiber.CookieSameSiteLaxMode,
+                Secure:   true,
+                HTTPOnly: true,
+        })
+}</span>
+
+func (f *fiberContext) ResponseRedirect(to string) error <span class="cov0" title="0">{
+        f.ctx.Location(to)
+        f.ctx.Redirect()
+        f.ctx.Status(http.StatusFound)
+
+        return nil
+}</span>
+
+func (f *fiberContext) Render(name string, data map[string]any) error <span class="cov0" title="0">{
+        return f.ctx.Render(name, data)
+}</span>
+
+func (f *fiberContext) FormValue(key string) string <span class="cov0" title="0">{
+        return f.ctx.FormValue(key)
+}</span>
+
+func (f *fiberContext) SetContext(key any, value any) <span class="cov0" title="0">{
+        f.ctx.Locals(key, value)
+}</span>
+
+func (f *fiberContext) GetContext(key any) any <span class="cov0" title="0">{
+        return f.ctx.Locals(key)
+}</span>
+
+func (f *fiberContext) Next() error <span class="cov0" title="0">{
+        return f.ctx.Next()
+}</span>
+
+// this is to define variables or functions that parsed through the local context
+type (
+        localRouteRoles struct{}
+)
+
+func (f *fiberContext) GetRouteRoles() []string <span class="cov0" title="0">{
+        return f.ctx.Locals(localRouteRoles{}).([]string)
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package http
+
+import (
+        "context"
+        "fmt"
+        "net/http"
+)
+
+type HttpRouter struct {
+        Calls      *[]string
+        RouteGroup string
+}
+
+func (m *HttpRouter) Get(path string, _ RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, fmt.Sprintf("GET %s", m.fullPath(path)))
+}</span>
+
+func (m *HttpRouter) Post(path string, _ RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, fmt.Sprintf("POST %s", m.fullPath(path)))
+}</span>
+
+func (m *HttpRouter) Put(path string, _ RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, fmt.Sprintf("PUT %s", m.fullPath(path)))
+}</span>
+
+func (m *HttpRouter) Delete(path string, _ RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, fmt.Sprintf("DELETE %s", m.fullPath(path)))
+}</span>
+
+func (m *HttpRouter) Patch(path string, _ RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, fmt.Sprintf("PATCH %s", m.fullPath(path)))
+}</span>
+
+func (m *HttpRouter) Use(args ...any) IHttpRouter <span class="cov0" title="0">{
+        return m
+}</span>
+
+func (m *HttpRouter) Group(prefix string, handlers ...any) IHttpRouter <span class="cov0" title="0">{
+        newPrefix := m.RouteGroup + prefix
+        if len(newPrefix) &gt; 1 &amp;&amp; newPrefix[len(newPrefix)-1] == '/' </span><span class="cov0" title="0">{
+                newPrefix = newPrefix[:len(newPrefix)-1]
+        }</span>
+
+        <span class="cov0" title="0">for _, handler := range handlers </span><span class="cov0" title="0">{
+                if name, ok := handler.(string); ok </span><span class="cov0" title="0">{
+                        *m.Calls = append(*m.Calls, fmt.Sprintf("GROUP %s AS %s", newPrefix, name))
+                }</span>
+        }
+
+        <span class="cov0" title="0">return &amp;HttpRouter{Calls: m.Calls, RouteGroup: newPrefix}</span>
+}
+
+func (m *HttpRouter) Listen(port string) error <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, fmt.Sprintf("LISTEN %s", port))
+        return nil
+}</span>
+
+func (m *HttpRouter) Shutdown() error <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, "SHUTDOWN")
+        return nil
+}</span>
+
+func (m *HttpRouter) ShutdownWithContext(ctx context.Context) error <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, "SHUTDOWN WITH CONTEXT")
+        return nil
+}</span>
+
+func (m *HttpRouter) ActiveConnections() int <span class="cov0" title="0">{
+        return 0
+}</span>
+
+func (m *HttpRouter) Test(req *http.Request) (*http.Response, error) <span class="cov0" title="0">{
+        *m.Calls = append(*m.Calls, "TEST")
+        return nil, nil
+}</span>
+
+func (m *HttpRouter) fullPath(path string) string <span class="cov0" title="0">{
+        if m.RouteGroup == "/" </span><span class="cov0" title="0">{
+                return path
+        }</span>
+
+        <span class="cov0" title="0">return m.RouteGroup + path</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package http
+
+import fiber "github.com/gofiber/fiber/v3"
+
+type (
+        RouterOptions struct {
+                Roles       []string
+                Middlewares []fiber.Handler
+        }
+
+        RouterFuncOption func(opt *RouterOptions)
+)
+
+func SetRouterFullOption(routerOpts RouterOptions) RouterFuncOption <span class="cov0" title="0">{
+        return RouterFuncOption(func(opt *RouterOptions) </span><span class="cov0" title="0">{
+                opt.Roles = append(opt.Roles, routerOpts.Roles...) // IMPROVEMENT: remove duplicates and normalize
+                opt.Middlewares = append(opt.Middlewares, routerOpts.Middlewares...)
+
+                // NOTE: add here if there are new router options
+        }</span>)
+}
+
+func SetRouterRolesOption(roles []string) RouterFuncOption <span class="cov0" title="0">{
+        return RouterFuncOption(func(opt *RouterOptions) </span><span class="cov0" title="0">{
+                opt.Roles = append(opt.Roles, roles...) // IMPROVEMENT: remove duplicates and normalize
+        }</span>)
+}
+
+func SetRouterMiddleware(middlewares ...fiber.Handler) RouterFuncOption <span class="cov0" title="0">{
+        return RouterFuncOption(func(opt *RouterOptions) </span><span class="cov0" title="0">{
+                opt.Middlewares = append(opt.Middlewares, middlewares...)
+        }</span>)
+}
+
+func SetMiddleware(middlewares ...RouteHandler) RouterFuncOption <span class="cov0" title="0">{
+        return RouterFuncOption(func(opt *RouterOptions) </span><span class="cov0" title="0">{
+                for _, m := range middlewares </span><span class="cov0" title="0">{
+                        handler := m
+                        opt.Middlewares = append(opt.Middlewares, func(c fiber.Ctx) error </span><span class="cov0" title="0">{
+                                return handler(&amp;fiberContext{ctx: c})
+                        }</span>)
+                }
+        })
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package http
+
+import (
+        "sort"
+)
+
+type (
+        RouteFunc func(router IHttpRouter)
+        RouteGroup struct {
+                Name     string
+                Handlers []any
+                RouteFns []RouteFunc
+        }
+)
+
+var (
+        groupRegistry = make(map[string]RouteGroup)
+)
+
+func RegisterRouteByGroup(group string, routeFns []RouteFunc, handlers ...any) <span class="cov0" title="0">{
+        registerGroup := func(group string, fn []RouteFunc, handlers []any) </span><span class="cov0" title="0">{
+                groupRegistry[group] = RouteGroup{
+                        Name:     group,
+                        Handlers: handlers,
+                        RouteFns: fn,
+                }
+        }</span>
+
+        <span class="cov0" title="0">registerGroup(group, routeFns, handlers)</span>
+}
+
+func RegisterRoutes(r IHttpRouter) <span class="cov0" title="0">{
+        // always register public routes first if available
+        if g, ok := groupRegistry["public"]; ok </span><span class="cov0" title="0">{
+                // prepend group name to handlers
+                handlers := append([]any{"public"}, g.Handlers...)
+                routerGroup := r.Group("/", handlers...)
+                for _, fn := range g.RouteFns </span><span class="cov0" title="0">{
+                        fn(routerGroup)
+                }</span>
+        }
+
+        // map groups, except public
+        <span class="cov0" title="0">var groups []string
+        for g := range groupRegistry </span><span class="cov0" title="0">{
+                if g != "public" </span><span class="cov0" title="0">{
+                        groups = append(groups, g)
+                }</span>
+        }
+
+        // sort group
+        <span class="cov0" title="0">sort.Strings(groups)
+
+        // loop based on sorted group name
+        for _, groupName := range groups </span><span class="cov0" title="0">{
+                g := groupRegistry[groupName]
+                handlers := append([]any{groupName}, g.Handlers...)
+                routerGroup := r.Group("/"+groupName, handlers...)
+                for _, fn := range g.RouteFns </span><span class="cov0" title="0">{
+                        fn(routerGroup)
+                }</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package http
+
+import (
+        "context" // Added for ShutdownWithContext
+        "fmt"
+        "net/http"
+        "slices"
+        "strings"
+
+        "github.com/evenyosua18/ego/auth"
+        "github.com/evenyosua18/ego/code"
+        "github.com/evenyosua18/ego/config"
+        "github.com/evenyosua18/ego/http/middleware"
+        "github.com/evenyosua18/ego/tracer"
+        "github.com/gofiber/contrib/v3/swaggerui"
+        fiber "github.com/gofiber/fiber/v3"
+        "github.com/gofiber/fiber/v3/middleware/cors"
+        html "github.com/gofiber/template/html/v2"
+)
+
+type Router struct {
+        app                fiber.Router
+        DisableAuthChecker bool
+        routeGroup         string
+}
+
+func NewRouter(cfg RouteConfig) *Router <span class="cov0" title="0">{
+        // set fiber configs
+        fiberConfig := fiber.Config{
+                Concurrency:  cfg.MaxConnection,
+                ReadTimeout:  cfg.ReadTimeout,
+                WriteTimeout: cfg.WriteTimeout,
+                IdleTimeout:  cfg.IdleTimeout,
+        }
+
+        // set html engine to fiber configs
+        if cfg.HtmlPath != "" </span><span class="cov0" title="0">{
+                // register html
+                engine := html.New(cfg.HtmlPath, ".html")
+                fiberConfig.Views = engine
+        }</span>
+
+        // route
+        <span class="cov0" title="0">fiberApp := fiber.New(fiberConfig)
+
+        // setup documentation
+        if cfg.Doc.Path != "" </span><span class="cov0" title="0">{
+                // fiber-swagger middleware
+                fiberApp.Get("/docs", swaggerui.New(swaggerui.Config{
+                        BasePath: "/",
+                        FilePath: cfg.Doc.Path,
+                        Path:     "docs",
+                }))
+
+                // set swagger
+                fiberApp.Get("/"+cfg.Doc.Path, func(c fiber.Ctx) error </span><span class="cov0" title="0">{
+                        // Returns the file located at ./docs/swagger.json
+                        return c.SendFile(cfg.Doc.Path)
+                }</span>)
+        }
+
+        // set favicon route if implement html engine
+        <span class="cov0" title="0">if cfg.HtmlPath != "" </span><span class="cov0" title="0">{
+                fiberApp.Get("/favicon.ico", func(c fiber.Ctx) error </span><span class="cov0" title="0">{
+                        return c.SendStatus(fiber.StatusNoContent)
+                }</span>)
+        }
+
+        // set middleware
+        <span class="cov0" title="0">fiberApp.Use(middleware.PanicHandler(), middleware.LogHandler())
+
+        // set rate limiter middleware
+        if cfg.RateLimit.MaxLimit != 0 </span><span class="cov0" title="0">{
+                fiberApp.Use(middleware.RateLimiter(cfg.RateLimit.MaxLimit))
+        }</span>
+
+        // set cors
+        <span class="cov0" title="0">corsConfig := cors.ConfigDefault
+
+        if len(cfg.CORS.AllowOrigins) &gt; 0 </span><span class="cov0" title="0">{
+                corsConfig.AllowOrigins = cfg.CORS.AllowOrigins
+        }</span>
+
+        <span class="cov0" title="0">if len(cfg.CORS.AllowMethods) &gt; 0 </span><span class="cov0" title="0">{
+                corsConfig.AllowMethods = cfg.CORS.AllowMethods
+        }</span>
+
+        <span class="cov0" title="0">if len(cfg.CORS.AllowHeaders) &gt; 0 </span><span class="cov0" title="0">{
+                corsConfig.AllowHeaders = cfg.CORS.AllowHeaders
+        }</span>
+
+        <span class="cov0" title="0">if cfg.CORS.AllowCredentials </span><span class="cov0" title="0">{
+                corsConfig.AllowCredentials = cfg.CORS.AllowCredentials
+        }</span>
+
+        <span class="cov0" title="0">fiberApp.Use(cors.New(corsConfig))
+
+        // set router
+        router := &amp;Router{
+                app:                fiberApp,
+                DisableAuthChecker: cfg.DisableAuthChecker,
+        }
+
+        // register routes
+        RegisterRoutes(router.Group(cfg.MainPrefix))
+
+        // print all registered routes
+        if cfg.ShowRegisteredRoute </span><span class="cov0" title="0">{
+                fmt.Println("registered routes")
+                for _, routes := range fiberApp.Stack() </span><span class="cov0" title="0">{
+                        for _, route := range routes </span><span class="cov0" title="0">{
+                                if route.Path != "/" </span><span class="cov0" title="0">{
+                                        fmt.Printf("%-6s %s\n", route.Method, route.Path)
+                                }</span>
+                        }
+                }
+        }
+
+        <span class="cov0" title="0">return router</span>
+}
+
+func (r *Router) Listen(port string) error <span class="cov0" title="0">{
+        return r.app.(*fiber.App).Listen(port)
+}</span>
+
+func (r *Router) Shutdown() error <span class="cov0" title="0">{
+        return r.app.(*fiber.App).Shutdown()
+}</span>
+
+func (r *Router) ShutdownWithContext(ctx context.Context) error <span class="cov0" title="0">{
+        return r.app.(*fiber.App).ShutdownWithContext(ctx)
+}</span>
+
+func (r *Router) ActiveConnections() int <span class="cov0" title="0">{
+        if fiberApp, ok := r.app.(*fiber.App); ok </span><span class="cov0" title="0">{
+                return int(fiberApp.Server().GetOpenConnectionsCount())
+        }</span>
+        <span class="cov0" title="0">return 0</span>
+}
+
+func (r *Router) Test(req *http.Request) (*http.Response, error) <span class="cov0" title="0">{
+        if fiberApp, ok := r.app.(*fiber.App); ok </span><span class="cov0" title="0">{
+                return fiberApp.Test(req)
+        }</span>
+        <span class="cov0" title="0">return nil, fmt.Errorf("router is not a fiber app")</span>
+}
+
+func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Handler, []fiber.Handler) <span class="cov0" title="0">{
+        // apply options
+        routeOpt := &amp;RouterOptions{}
+        for _, opt := range opts </span><span class="cov0" title="0">{
+                opt(routeOpt)
+        }</span>
+
+        // append a middleware to inject route roles into fiber local context
+        <span class="cov0" title="0">var middlewares []fiber.Handler
+        if r.DisableAuthChecker </span><span class="cov0" title="0">{
+                middlewares = make([]fiber.Handler, 0, len(routeOpt.Middlewares)+1)
+                if len(routeOpt.Roles) &gt; 0 </span><span class="cov0" title="0">{
+                        middlewares = append(middlewares, func(c fiber.Ctx) error </span><span class="cov0" title="0">{
+                                c.Locals(localRouteRoles{}, routeOpt.Roles)
+                                return c.Next()
+                        }</span>)
+                }
+
+                <span class="cov0" title="0">middlewares = append(middlewares, routeOpt.Middlewares...)</span>
+        } else<span class="cov0" title="0"> {
+                middlewares = routeOpt.Middlewares
+        }</span>
+
+        <span class="cov0" title="0">handler := func(c fiber.Ctx) error </span><span class="cov0" title="0">{
+                // setup context
+                fiberCtx := fiberContext{ctx: c}
+
+                // auth validation
+                if !r.DisableAuthChecker </span><span class="cov0" title="0">{
+                        // get authorization header
+                        authHeader := c.Get("Authorization")
+
+                        // check length
+                        if len(authHeader) == 0 </span><span class="cov0" title="0">{
+                                return code.Get(code.BadRequestError).SetMessage("header not found")
+                        }</span>
+
+                        // split token
+                        <span class="cov0" title="0">splitToken := strings.Split(authHeader, "Bearer ")
+
+                        if len(splitToken) != 2 </span><span class="cov0" title="0">{
+                                return code.Get(code.BadRequestError).SetMessage("invalid authorization header")
+                        }</span>
+
+                        // validate access token
+                        <span class="cov0" title="0">claims, err := auth.ValidateToken(c.Context(), splitToken[1])
+                        if err != nil </span><span class="cov0" title="0">{
+                                return code.Get(code.UnauthorizedError)
+                        }</span>
+
+                        // validate access type
+                        <span class="cov0" title="0">if claims.AccessType != r.routeGroup </span><span class="cov0" title="0">{
+                                return code.Get(code.UnauthorizedError).SetMessage("invalid access type")
+                        }</span>
+
+                        <span class="cov0" title="0">switch r.routeGroup </span>{
+                        case "svc":<span class="cov0" title="0">
+                                // validate service eligibility
+                                if err = validateServiceToken(claims.AllowedServices); err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                                <span class="cov0" title="0">break</span>
+                        case "public":<span class="cov0" title="0">
+                                // validate public eligibility
+                                if err = validatePublicToken(routeOpt.Roles, claims.Roles); err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                                <span class="cov0" title="0">break</span>
+                        }
+
+                }
+
+                // get http data
+                <span class="cov0" title="0">data, opName := fiberCtx.HttpData()
+
+                // create tracer
+                sp := tracer.StartSpan(c.Context(), opName, tracer.WithAttributes(data))
+                defer sp.End()
+
+                return h(&amp;fiberCtx)</span>
+        }
+
+        <span class="cov0" title="0">return handler, middlewares</span>
+}
+
+func (r *Router) Get(path string, h RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        handler, middlewares := r.extractWrap(h, opts)
+        middlewares = append(middlewares, handler)
+        r.app.Get(path, middlewares[0], middlewares[1:]...)
+}</span>
+
+func (r *Router) Post(path string, h RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        handler, middlewares := r.extractWrap(h, opts)
+        middlewares = append(middlewares, handler)
+        r.app.Post(path, middlewares[0], middlewares[1:]...)
+}</span>
+
+func (r *Router) Put(path string, h RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        handler, middlewares := r.extractWrap(h, opts)
+        middlewares = append(middlewares, handler)
+        r.app.Put(path, middlewares[0], middlewares[1:]...)
+}</span>
+
+func (r *Router) Delete(path string, h RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        handler, middlewares := r.extractWrap(h, opts)
+        middlewares = append(middlewares, handler)
+        r.app.Delete(path, middlewares[0], middlewares[1:]...)
+}</span>
+
+func (r *Router) Patch(path string, h RouteHandler, opts ...RouterFuncOption) <span class="cov0" title="0">{
+        handler, middlewares := r.extractWrap(h, opts)
+        middlewares = append(middlewares, handler)
+        r.app.Patch(path, middlewares[0], middlewares[1:]...)
+}</span>
+
+func (r *Router) Use(args ...any) IHttpRouter <span class="cov0" title="0">{
+        r.app.Use(args...)
+        return r
+}</span>
+
+func (r *Router) Group(prefix string, handlers ...any) IHttpRouter <span class="cov0" title="0">{
+        routeGroup := r.routeGroup
+        var fiberHandlers []fiber.Handler
+
+        if len(handlers) &gt; 0 </span><span class="cov0" title="0">{
+                for _, handler := range handlers </span><span class="cov0" title="0">{
+                        if name, ok := handler.(string); ok </span><span class="cov0" title="0">{
+                                routeGroup = name
+                        }</span> else<span class="cov0" title="0"> if fh, ok := handler.(fiber.Handler); ok </span><span class="cov0" title="0">{
+                                fiberHandlers = append(fiberHandlers, fh)
+                        }</span> else<span class="cov0" title="0"> if fh, ok := handler.(func(fiber.Ctx) error); ok </span><span class="cov0" title="0">{
+                                fiberHandlers = append(fiberHandlers, fh)
+                        }</span>
+                }
+        }
+
+        <span class="cov0" title="0">return &amp;Router{
+                app:                r.app.Group(prefix, fiberHandlers...),
+                DisableAuthChecker: r.DisableAuthChecker,
+                routeGroup:         routeGroup,
+        }</span>
+}
+
+// internal function to validate the access token
+// this part is dynamic based on the usecase
+func validateServiceToken(allowedService []string) error <span class="cov0" title="0">{
+        if !slices.Contains(allowedService, config.GetConfig().GetString("service.name")) </span><span class="cov0" title="0">{
+                return code.Get(code.UnauthorizedError).SetMessage("invalid service eligibility")
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func validatePublicToken(routeRoles []string, allowedRoles []string) error <span class="cov0" title="0">{
+        if len(routeRoles) == 0 </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">for _, role := range allowedRoles </span><span class="cov0" title="0">{
+                if slices.Contains(routeRoles, role) </span><span class="cov0" title="0">{
+                        return nil
+                }</span>
+        }
+
+        <span class="cov0" title="0">return code.Get(code.UnauthorizedError).SetMessage("invalid role eligibility")</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

@@ -50,4 +50,6 @@ type Context interface {
 	SetContext(key any, value any)
 	GetContext(key any) any
 	Next() error
+
+	GetRouteRoles() []string
 }

@@ -158,7 +158,7 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 		middlewares = make([]fiber.Handler, 0, len(routeOpt.Middlewares)+1)
 		if len(routeOpt.Roles) > 0 {
 			middlewares = append(middlewares, func(c fiber.Ctx) error {
-				c.Locals(LocalRouteRoles{}, routeOpt.Roles)
+				c.Locals(localRouteRoles{}, routeOpt.Roles)
 				return c.Next()
 			})
 		}
