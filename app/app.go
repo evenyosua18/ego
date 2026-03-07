@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/evenyosua18/ego/auth"
 	"github.com/evenyosua18/ego/cache"
 	"github.com/evenyosua18/ego/cache/redis_adapter"
 	"github.com/evenyosua18/ego/code"
@@ -117,6 +118,17 @@ func (a *app) RunRest() {
 		},
 	})
 
+	// init background context
+	bgCtx, cancelBg := context.WithCancel(context.Background())
+	defer cancelBg()
+
+	// init token manager
+	if appConfig.AuthSvcConfig.ClientId != "" && appConfig.AuthSvcConfig.ClientSecret != "" {
+		if err := auth.ManageAccessToken(bgCtx, appConfig.AuthSvcConfig.BaseUrl, appConfig.AuthSvcConfig.ClientId, appConfig.AuthSvcConfig.ClientSecret); err != nil {
+			panic(fmt.Errorf("failed allocating service access token on startup: %w", err))
+		}
+	}
+
 	// graceful shutdown setup
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -130,6 +142,9 @@ func (a *app) RunRest() {
 
 	<-quit
 	logger.Info("Shutting down server...")
+
+	// cancel background services (e.g., token manager)
+	cancelBg()
 	logger.Info(fmt.Sprintf("Active connections: %d", a.httpRouter.ActiveConnections()))
 
 	ctx, cancel := context.WithTimeout(context.Background(), appConfig.AppConfig.ShutdownTimeout) // 5s timeout

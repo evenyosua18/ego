@@ -147,9 +147,9 @@ func (r *Router) Test(req *http.Request) (*http.Response, error) {
 
 func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Handler, []fiber.Handler) {
 	// apply options
-	reqOpt := &RouterOptions{}
+	routeOpt := &RouterOptions{}
 	for _, opt := range opts {
-		opt(reqOpt)
+		opt(routeOpt)
 	}
 
 	handler := func(c fiber.Ctx) error {
@@ -191,6 +191,12 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 					return err
 				}
 				break
+			case "public":
+				// validate public eligibility
+				if err = validatePublicToken(routeOpt.Roles, claims.Roles); err != nil {
+					return err
+				}
+				break
 			}
 
 			return nil
@@ -206,7 +212,7 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 		return h(&fiberCtx)
 	}
 
-	return handler, reqOpt.Middlewares
+	return handler, routeOpt.Middlewares
 }
 
 func (r *Router) Get(path string, h RouteHandler, opts ...RouterFuncOption) {
@@ -275,4 +281,18 @@ func validateServiceToken(allowedService []string) error {
 	}
 
 	return nil
+}
+
+func validatePublicToken(routeRoles []string, allowedRoles []string) error {
+	if len(routeRoles) == 0 {
+		return nil
+	}
+
+	for _, role := range allowedRoles {
+		if slices.Contains(routeRoles, role) {
+			return nil
+		}
+	}
+
+	return code.Get(code.UnauthorizedError).SetMessage("invalid role eligibility")
 }

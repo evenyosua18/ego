@@ -98,6 +98,10 @@ const (
 	DefaultCacheRedisWriteTimeout = 5 * time.Second
 	DefaultCacheRedisDialTimeout  = 5 * time.Second
 	DefaultCacheRedisPoolTimeout  = 5 * time.Second
+
+	AuthSvcBaseUrl      = "auth_svc.base_url"
+	AuthSvcClientId     = "auth_svc.client_id"
+	AuthSvcClientSecret = "auth_svc.client_secret"
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
@@ -111,6 +115,7 @@ type (
 		RouterConfig   *Router
 		LoggerConfig   *Logger
 		CacheConfig    *Cache
+		AuthSvcConfig  *AuthSvc
 	}
 
 	Code struct {
@@ -192,6 +197,12 @@ type (
 		WriteTimeout time.Duration
 		DialTimeout  time.Duration
 		PoolTimeout  time.Duration
+	}
+
+	AuthSvc struct {
+		BaseUrl      string
+		ClientId     string
+		ClientSecret string
 	}
 )
 
@@ -275,6 +286,13 @@ func (c *Config) build() {
 			DialTimeout:  c.getOrDefaultDuration(CacheRedisDialTimeout, DefaultCacheRedisDialTimeout),
 			PoolTimeout:  c.getOrDefaultDuration(CacheRedisPoolTimeout, DefaultCacheRedisPoolTimeout),
 		},
+	}
+
+	// auth svc
+	c.AuthSvcConfig = &AuthSvc{
+		BaseUrl:      c.getOrDefault(AuthSvcBaseUrl, ""),
+		ClientId:     c.getOrDefault(AuthSvcClientId, ""),
+		ClientSecret: c.getOrDefault(AuthSvcClientSecret, ""),
 	}
 
 	return

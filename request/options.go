@@ -45,3 +45,15 @@ func WithRetry(maxRetries int, delay time.Duration, retryCodes ...int) RequestOp
 		r.retryCodes = retryCodes
 	}
 }
+
+// WithAuthToken injects an access token into the Authorization Bearer header.
+func WithAuthToken(token string) RequestOption {
+	return func(r *Request) {
+		if token != "" {
+			if r.Headers == nil {
+				r.Headers = make(map[string]string)
+			}
+			r.Headers["Authorization"] = "Bearer " + token
+		}
+	}
+}
