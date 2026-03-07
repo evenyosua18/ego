@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/evenyosua18/ego/auth"
 	"github.com/evenyosua18/ego/code"
 	fiber "github.com/gofiber/fiber/v3"
 )
@@ -211,10 +212,10 @@ func (f *fiberContext) Next() error {
 }
 
 // this is to define variables or functions that parsed through the local context
-type (
-	localRouteRoles struct{}
-)
-
 func (f *fiberContext) GetRouteRoles() []string {
 	return f.ctx.Locals(localRouteRoles{}).([]string)
+}
+
+func (f *fiberContext) GetRouteClaimToken() auth.ClaimToken {
+	return f.ctx.Locals(ContextClaimToken{}).(auth.ClaimToken)
 }

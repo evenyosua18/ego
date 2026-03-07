@@ -215,6 +215,8 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 				break
 			}
 
+			// inject claim token into context
+			c.Locals(ContextClaimToken{}, claims)
 		}
 
 		// get http data

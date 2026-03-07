@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"time"
+
+	"github.com/evenyosua18/ego/auth"
 )
 
 type RouteHandler func(ctx Context) error
@@ -52,4 +54,5 @@ type Context interface {
 	Next() error
 
 	GetRouteRoles() []string
+	GetRouteClaimToken() auth.ClaimToken
 }
