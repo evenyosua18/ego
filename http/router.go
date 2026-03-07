@@ -152,6 +152,19 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 		opt(routeOpt)
 	}
 
+	// append a middleware to inject route roles into fiber local context
+	if r.DisableAuthChecker {
+		middlewares := make([]fiber.Handler, 0, len(routeOpt.Middlewares)+1)
+		if len(routeOpt.Roles) > 0 {
+			middlewares = append(middlewares, func(c fiber.Ctx) error {
+				c.Locals(LocalRouteRoles{}, routeOpt.Roles)
+				return c.Next()
+			})
+		}
+
+		middlewares = append(middlewares, routeOpt.Middlewares...)
+	}
+
 	handler := func(c fiber.Ctx) error {
 		// setup context
 		fiberCtx := fiberContext{ctx: c}
@@ -211,7 +224,7 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 		return h(&fiberCtx)
 	}
 
-	return handler, routeOpt.Middlewares
+	return handler, middlewares
 }
 
 func (r *Router) Get(path string, h RouteHandler, opts ...RouterFuncOption) {

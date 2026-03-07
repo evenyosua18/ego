@@ -209,3 +209,8 @@ func (f *fiberContext) GetContext(key any) any {
 func (f *fiberContext) Next() error {
 	return f.ctx.Next()
 }
+
+// this is to define variables that parsed through the local context
+type (
+	LocalRouteRoles struct{}
+)
