@@ -4,7 +4,12 @@ import (
 	"context" // Added for ShutdownWithContext
 	"fmt"
 	"net/http"
+	"slices"
+	"strings"
 
+	"github.com/evenyosua18/ego/auth"
+	"github.com/evenyosua18/ego/code"
+	"github.com/evenyosua18/ego/config"
 	"github.com/evenyosua18/ego/http/middleware"
 	"github.com/evenyosua18/ego/tracer"
 	"github.com/gofiber/contrib/v3/swaggerui"
@@ -92,7 +97,8 @@ func NewRouter(cfg RouteConfig) *Router {
 
 	// set router
 	router := &Router{
-		app: fiberApp,
+		app:                fiberApp,
+		DisableAuthChecker: cfg.DisableAuthChecker,
 	}
 
 	// register routes
@@ -152,7 +158,42 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 
 		// auth validation
 		if !r.DisableAuthChecker {
-			// TODO should check the given access token
+			// get authorization header
+			authHeader := c.Get("Authorization")
+
+			// check length
+			if len(authHeader) == 0 {
+				return code.Get(code.BadRequestError).SetMessage("header not found")
+			}
+
+			// split token
+			splitToken := strings.Split(authHeader, "Bearer ")
+
+			if len(splitToken) != 2 {
+				return code.Get(code.BadRequestError).SetMessage("invalid authorization header")
+			}
+
+			// validate access token
+			claims, err := auth.ValidateToken(c.Context(), splitToken[1])
+			if err != nil {
+				return code.Get(code.UnauthorizedError)
+			}
+
+			// validate access type
+			if claims.AccessType != r.routeGroup {
+				return code.Get(code.UnauthorizedError).SetMessage("invalid access type")
+			}
+
+			switch r.routeGroup {
+			case "svc":
+				// validate service eligibility
+				if err = validateServiceToken(claims.AllowedServices); err != nil {
+					return err
+				}
+				break
+			}
+
+			return nil
 		}
 
 		// get http data
@@ -224,4 +265,14 @@ func (r *Router) Group(prefix string, handlers ...any) IHttpRouter {
 		DisableAuthChecker: r.DisableAuthChecker,
 		routeGroup:         routeGroup,
 	}
+}
+
+// internal function to validate the access token
+// this part is dynamic based on the usecase
+func validateServiceToken(allowedService []string) error {
+	if !slices.Contains(allowedService, config.GetConfig().GetString("service.name")) {
+		return code.Get(code.UnauthorizedError).SetMessage("invalid service eligibility")
+	}
+
+	return nil
 }
