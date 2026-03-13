@@ -223,8 +223,11 @@ func (r *Router) extractWrap(h RouteHandler, opts []RouterFuncOption) (fiber.Han
 		data, opName := fiberCtx.HttpData()
 
 		// create tracer
-		sp := tracer.StartSpan(c.Context(), opName, tracer.WithAttributes(data))
+		sp, tracedCtx := tracer.StartSpanWithContext(c.Context(), opName, tracer.WithAttributes(data))
 		defer sp.End()
+
+		// set newly traced context to fiber
+		c.SetContext(tracedCtx)
 
 		return h(&fiberCtx)
 	}

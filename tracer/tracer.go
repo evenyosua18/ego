@@ -77,7 +77,7 @@ func (s *SentryTracer) StartSpan(ctx context.Context, name string, opts ...SpanO
 }
 
 func (s *SentryTracer) StartSpanWithContext(ctx context.Context, name string, opts ...SpanOptionFunc) (Span, context.Context) {
-	sp := tracer.StartSpan(ctx, name, opts...)
+	sp := s.StartSpan(ctx, name, opts...)
 
 	return sp, sp.Context()
 }
