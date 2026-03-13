@@ -66,6 +66,11 @@ func NewRouter(cfg RouteConfig) *Router {
 		})
 	}
 
+	// set health check
+	fiberApp.Get("/healthz", func(c fiber.Ctx) error {
+		return c.SendStatus(fiber.StatusOK)
+	})
+
 	// set middleware
 	fiberApp.Use(middleware.PanicHandler(), middleware.LogHandler())
 

@@ -169,3 +169,25 @@ func TestRouter_CORS(t *testing.T) {
 		t.Errorf("expected Access-Control-Allow-Origin to be http://example.com, got %s", allowOrigin)
 	}
 }
+
+func TestRouter_HealthCheck(t *testing.T) {
+	// setup config
+	cfg := RouteConfig{}
+
+	// setup router
+	r := NewRouter(cfg)
+
+	// create request
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+
+	// perform request
+	resp, err := r.app.(*fiber.App).Test(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+}

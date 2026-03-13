@@ -32,14 +32,14 @@ func (a *app) RunRest() {
 	logger.SetLogger(logger.NewDefaultLogger(logger.ParseLevel(appConfig.LoggerConfig.Level)))
 
 	// load custom codes
-	if appConfig.CodeConfig.Filename != "" {
+	if appConfig.CodeConfig != nil && appConfig.CodeConfig.Filename != "" {
 		if err := code.LoadCodes(config.GetConfig().GetConfigPath() + "/" + appConfig.CodeConfig.Filename); err != nil {
 			panic(err)
 		}
 	}
 
 	// tracer
-	if appConfig.TracerConfig.DSN != "" {
+	if appConfig.TracerConfig != nil && appConfig.TracerConfig.DSN != "" {
 		flushFunction, err := tracer.RunSentry(tracer.Config{
 			Dsn:             appConfig.TracerConfig.DSN,
 			Env:             appConfig.AppConfig.Env,
@@ -54,7 +54,7 @@ func (a *app) RunRest() {
 	}
 
 	// db connection
-	if appConfig.DatabaseConfig.Name != "" {
+	if appConfig.DatabaseConfig != nil && appConfig.DatabaseConfig.Name != "" {
 		// trying to connect database
 		db, err := sqldb.Connect(appConfig.DatabaseConfig.Driver, appConfig.getDBUri(), &sqldb.Config{
 			MaxOpenConns:    appConfig.DatabaseConfig.MaxOpenConns,
@@ -71,7 +71,7 @@ func (a *app) RunRest() {
 	}
 
 	// cache connection
-	if appConfig.CacheConfig.Redis != nil {
+	if appConfig.CacheConfig.Redis != nil && appConfig.CacheConfig.Redis.Addr != "" {
 		// trying to connect redis
 		redis, err := redis_adapter.NewRedisAdapter(redis_adapter.RedisConfig{
 			Addr:         appConfig.CacheConfig.Redis.Addr,
