@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"slices"
 	"time"
+
+	"github.com/evenyosua18/ego/code"
+	"github.com/sony/gobreaker/v2"
 )
 
 // Client is a wrapper around http.Client
@@ -40,6 +44,9 @@ type Request struct {
 	maxRetries int
 	retryDelay time.Duration
 	retryCodes []int
+
+	// Circuit breaker bypass
+	disableBreaker bool
 }
 
 // applyOptions processes functional options for the request.
@@ -84,12 +91,50 @@ func (c *Client) Do(ctx context.Context, req Request) (*http.Response, []byte, e
 	var resp *http.Response
 	var body []byte
 
+	type attemptResult struct {
+		resp *http.Response
+		body []byte
+		err  error
+	}
+
 	// Ensure at least 1 attempt (0 retries = 1 attempt)
 	attempts := req.maxRetries + 1
 
 	for i := 0; i < attempts; i++ {
-		// Attempt the request
-		resp, body, lastErr = c.doOnce(ctx, req)
+		var res any
+		var cbErr error
+
+		if req.disableBreaker {
+			r, b, e := c.doOnce(ctx, req)
+			res = attemptResult{resp: r, body: b, err: e}
+		} else {
+			// Attempt the request via circuit breaker
+			res, cbErr = executeWithBreaker(req.URL, func() (any, error) {
+				r, b, e := c.doOnce(ctx, req)
+				
+				if e != nil {
+					return attemptResult{resp: r, body: b, err: e}, e
+				}
+				
+				if r != nil && (r.StatusCode >= 500 || r.StatusCode == http.StatusTooManyRequests) {
+					return attemptResult{resp: r, body: b, err: nil}, errors.New("server error")
+				}
+				
+				return attemptResult{resp: r, body: b, err: nil}, nil
+			})
+		}
+
+		if res != nil {
+			payload := res.(attemptResult)
+			resp = payload.resp
+			body = payload.body
+			lastErr = payload.err
+		}
+
+		if cbErr != nil && (errors.Is(cbErr, gobreaker.ErrOpenState) || errors.Is(cbErr, gobreaker.ErrTooManyRequests)) {
+			lastErr = code.Wrap(cbErr, code.InternalError)
+			break // circuit breaker prevents further attempts
+		}
 
 		// Decide if we should retry
 		shouldRetry := false

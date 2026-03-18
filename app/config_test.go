@@ -548,3 +548,27 @@ func Test_normalizeRoutePrefix(t *testing.T) {
 		})
 	}
 }
+
+func TestConfig_build_Panic(t *testing.T) {
+	// this should panic
+	config.SetTestConfig(map[string]any{
+		ServiceEnv: "production",
+		DatabasePassword: "",
+	})
+
+	c := &Config{}
+	
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("build() should have panicked due to empty db password in non-local env")
+		} else if err, ok := r.(error); ok {
+			if err != ErrEmptyDBPassword {
+				t.Errorf("expected ErrEmptyDBPassword, got %v", err)
+			}
+		} else {
+			t.Errorf("expected ErrEmptyDBPassword panic, got non-error: %v", r)
+		}
+	}()
+
+	c.build()
+}

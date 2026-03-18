@@ -102,6 +102,16 @@ const (
 	AuthSvcBaseUrl      = "auth_svc.base_url"
 	AuthSvcClientId     = "auth_svc.client_id"
 	AuthSvcClientSecret = "auth_svc.client_secret"
+
+	BreakerMaxRequest          = "breaker.max_request"
+	BreakerInterval            = "breaker.interval"
+	BreakerTimeout             = "breaker.timeout"
+	BreakerConsecutiveFailures = "breaker.consecutive_failures"
+
+	DefaultBreakerMaxRequest          = 1
+	DefaultBreakerInterval            = 0 * time.Second
+	DefaultBreakerTimeout             = 30 * time.Second
+	DefaultBreakerConsecutiveFailures = 5
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
@@ -115,6 +125,7 @@ type (
 		RouterConfig   *Router
 		LoggerConfig   *Logger
 		CacheConfig    *Cache
+		BreakerConfig  *Breaker
 		AuthSvcConfig  *AuthSvc
 	}
 
@@ -197,6 +208,13 @@ type (
 		WriteTimeout time.Duration
 		DialTimeout  time.Duration
 		PoolTimeout  time.Duration
+	}
+
+	Breaker struct {
+		MaxRequest          int
+		Interval            time.Duration
+		Timeout             time.Duration
+		ConsecutiveFailures int
 	}
 
 	AuthSvc struct {
@@ -286,6 +304,14 @@ func (c *Config) build() {
 			DialTimeout:  c.getOrDefaultDuration(CacheRedisDialTimeout, DefaultCacheRedisDialTimeout),
 			PoolTimeout:  c.getOrDefaultDuration(CacheRedisPoolTimeout, DefaultCacheRedisPoolTimeout),
 		},
+	}
+
+	// breaker
+	c.BreakerConfig = &Breaker{
+		MaxRequest:          c.getOrDefaultInt(BreakerMaxRequest, DefaultBreakerMaxRequest),
+		Interval:            c.getOrDefaultDuration(BreakerInterval, DefaultBreakerInterval),
+		Timeout:             c.getOrDefaultDuration(BreakerTimeout, DefaultBreakerTimeout),
+		ConsecutiveFailures: c.getOrDefaultInt(BreakerConsecutiveFailures, DefaultBreakerConsecutiveFailures),
 	}
 
 	// auth svc

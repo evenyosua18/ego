@@ -57,3 +57,10 @@ func WithAuthToken(token string) RequestOption {
 		}
 	}
 }
+
+// WithoutBreaker disables the circuit breaker for the request.
+func WithoutBreaker() RequestOption {
+	return func(r *Request) {
+		r.disableBreaker = true
+	}
+}

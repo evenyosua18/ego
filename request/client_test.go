@@ -343,3 +343,38 @@ func TestClient_Do_ErrorStatusCode(t *testing.T) {
 		t.Errorf("Expected body %s, got %s", expectedBody, string(respBody))
 	}
 }
+
+func TestClient_CircuitBreakerAndCheckEndpoints(t *testing.T) {
+	hitCount := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hitCount++
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer ts.Close()
+
+	client := NewClient(ts.Client())
+
+	// The breaker trips after > 5 consecutive failures (so 6 failures).
+	// We will make 6 requests that fail.
+	for i := 0; i < 6; i++ {
+		_, _, _ = client.Get(context.Background(), ts.URL)
+	}
+
+	// At this point, the circuit breaker should be Open.
+	// 1. Verify CheckEndpoints returns an error.
+	err := CheckEndpoints(ts.URL)
+	if err == nil {
+		t.Error("Expected CheckEndpoints to return an error (circuit should be open)")
+	}
+
+	// 2. Verify subsequent requests fail instantly without hitting the server.
+	hitBefore := hitCount
+	_, _, err = client.Get(context.Background(), ts.URL)
+	if err == nil {
+		t.Error("Expected request to return error when circuit is open")
+	}
+
+	if hitCount > hitBefore {
+		t.Errorf("Expected no additional hits to server, but got %d extra hits", hitCount-hitBefore)
+	}
+}

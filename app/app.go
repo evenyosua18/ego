@@ -15,6 +15,7 @@ import (
 	"github.com/evenyosua18/ego/config"
 	"github.com/evenyosua18/ego/http"
 	"github.com/evenyosua18/ego/logger"
+	"github.com/evenyosua18/ego/request"
 	"github.com/evenyosua18/ego/sqldb"
 	"github.com/evenyosua18/ego/tracer"
 )
@@ -23,31 +24,53 @@ type app struct {
 	httpRouter http.IHttpRouter
 }
 
+var (
+	osExit           = os.Exit
+	panicFunc        = func(v any) { panic(v) }
+	loadCodesFunc    = code.LoadCodes
+	runSentryFunc    = tracer.RunSentry
+	dbConnectFunc    = sqldb.Connect
+	redisNewFunc     = redis_adapter.NewRedisAdapter
+	authManageFunc   = auth.ManageAccessToken
+	newRouterFunc    = func(cfg http.RouteConfig) http.IHttpRouter { return http.NewRouter(cfg) }
+	signalNotify     = signal.Notify
+)
+
 func (a *app) RunRest() {
 	// init config
 	appConfig := Config{}
 	appConfig.build()
+
+	// init breaker config
+	if appConfig.BreakerConfig != nil {
+		request.InitBreakerConfig(request.BreakerConfig{
+			MaxRequests:         uint32(appConfig.BreakerConfig.MaxRequest),
+			Interval:            appConfig.BreakerConfig.Interval,
+			Timeout:             appConfig.BreakerConfig.Timeout,
+			ConsecutiveFailures: uint32(appConfig.BreakerConfig.ConsecutiveFailures),
+		})
+	}
 
 	// setup logger
 	logger.SetLogger(logger.NewDefaultLogger(logger.ParseLevel(appConfig.LoggerConfig.Level)))
 
 	// load custom codes
 	if appConfig.CodeConfig != nil && appConfig.CodeConfig.Filename != "" {
-		if err := code.LoadCodes(config.GetConfig().GetConfigPath() + "/" + appConfig.CodeConfig.Filename); err != nil {
-			panic(err)
+		if err := loadCodesFunc(config.GetConfig().GetConfigPath() + "/" + appConfig.CodeConfig.Filename); err != nil {
+			panicFunc(err)
 		}
 	}
 
 	// tracer
 	if appConfig.TracerConfig != nil && appConfig.TracerConfig.DSN != "" {
-		flushFunction, err := tracer.RunSentry(tracer.Config{
+		flushFunction, err := runSentryFunc(tracer.Config{
 			Dsn:             appConfig.TracerConfig.DSN,
 			Env:             appConfig.AppConfig.Env,
 			TraceSampleRate: appConfig.TracerConfig.SampleRate,
 			FlushTime:       appConfig.TracerConfig.FlushTime,
 		})
 		if err != nil {
-			panic(err)
+			panicFunc(err)
 		}
 
 		defer flushFunction(appConfig.TracerConfig.FlushTime)
@@ -56,14 +79,14 @@ func (a *app) RunRest() {
 	// db connection
 	if appConfig.DatabaseConfig != nil && appConfig.DatabaseConfig.Name != "" {
 		// trying to connect database
-		db, err := sqldb.Connect(appConfig.DatabaseConfig.Driver, appConfig.getDBUri(), &sqldb.Config{
+		db, err := dbConnectFunc(appConfig.DatabaseConfig.Driver, appConfig.getDBUri(), &sqldb.Config{
 			MaxOpenConns:    appConfig.DatabaseConfig.MaxOpenConns,
 			MaxIdleConns:    appConfig.DatabaseConfig.MaxIdleConns,
 			ConnMaxLifetime: appConfig.DatabaseConfig.ConnMaxLifetime,
 			ConnMaxIdleTime: appConfig.DatabaseConfig.ConnMaxIdleTime,
 		})
 		if err != nil {
-			panic(err)
+			panicFunc(err)
 		}
 
 		// set db connection
@@ -73,7 +96,7 @@ func (a *app) RunRest() {
 	// cache connection
 	if appConfig.CacheConfig.Redis != nil && appConfig.CacheConfig.Redis.Addr != "" {
 		// trying to connect redis
-		redis, err := redis_adapter.NewRedisAdapter(redis_adapter.RedisConfig{
+		redis, err := redisNewFunc(redis_adapter.RedisConfig{
 			Addr:         appConfig.CacheConfig.Redis.Addr,
 			Password:     appConfig.CacheConfig.Redis.Password,
 			DB:           appConfig.CacheConfig.Redis.DB,
@@ -88,7 +111,7 @@ func (a *app) RunRest() {
 		})
 		if err != nil {
 			fmt.Println(appConfig.CacheConfig.Redis.Addr)
-			panic(err)
+			panicFunc(err)
 		}
 
 		// set to cache manager
@@ -96,7 +119,7 @@ func (a *app) RunRest() {
 	}
 
 	// get router
-	a.httpRouter = http.NewRouter(http.RouteConfig{
+	a.httpRouter = newRouterFunc(http.RouteConfig{
 		MainPrefix:          appConfig.RouterConfig.Prefix,
 		ShowRegisteredRoute: appConfig.RouterConfig.ShowRegistered,
 		HtmlPath:            appConfig.RouterConfig.HtmlPath,
@@ -124,19 +147,19 @@ func (a *app) RunRest() {
 
 	// init token manager
 	if appConfig.AuthSvcConfig.ClientId != "" && appConfig.AuthSvcConfig.ClientSecret != "" {
-		if err := auth.ManageAccessToken(bgCtx, appConfig.AuthSvcConfig.BaseUrl, appConfig.AuthSvcConfig.ClientId, appConfig.AuthSvcConfig.ClientSecret); err != nil {
-			panic(fmt.Errorf("failed allocating service access token on startup: %w", err))
+		if err := authManageFunc(bgCtx, appConfig.AuthSvcConfig.BaseUrl, appConfig.AuthSvcConfig.ClientId, appConfig.AuthSvcConfig.ClientSecret); err != nil {
+			panicFunc(fmt.Errorf("failed allocating service access token on startup: %w", err))
 		}
 	}
 
 	// graceful shutdown setup
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	signalNotify(quit, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
 		// listen
 		if err := a.httpRouter.Listen(appConfig.RouterConfig.Port); err != nil {
-			panic(err)
+			panicFunc(err)
 		}
 	}()
 
@@ -152,10 +175,10 @@ func (a *app) RunRest() {
 
 	if err := a.httpRouter.ShutdownWithContext(ctx); err != nil {
 		log.Printf("Server forced to shutdown: %v", err)
-		os.Exit(0)
+		osExit(0)
 	} else {
 		log.Println("Cleanup finished. Exiting...")
-		os.Exit(0)
+		osExit(0)
 	}
 }
 
