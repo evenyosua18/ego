@@ -71,6 +71,13 @@ func NewRouter(cfg RouteConfig) *Router {
 		return c.SendStatus(fiber.StatusOK)
 	})
 
+	// set config value (just for local)
+	if config.GetConfig().GetString("service.env") == "dev" {
+		fiberApp.Get("/config/:key", func(c fiber.Ctx) error {
+			return c.JSON(config.GetConfig().Get(c.Params("key")))
+		})
+	}
+
 	// set middleware
 	fiberApp.Use(middleware.PanicHandler(), middleware.LogHandler())
 

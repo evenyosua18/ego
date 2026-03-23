@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/evenyosua18/ego/config"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -146,6 +147,7 @@ func TestRouter_CORS(t *testing.T) {
 	}
 
 	// setup router
+	config.SetTestConfig(nil)
 	r := NewRouter(cfg)
 
 	// register a route
@@ -175,6 +177,7 @@ func TestRouter_HealthCheck(t *testing.T) {
 	cfg := RouteConfig{}
 
 	// setup router
+	config.SetTestConfig(nil)
 	r := NewRouter(cfg)
 
 	// create request

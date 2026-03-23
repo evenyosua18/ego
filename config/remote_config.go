@@ -7,6 +7,7 @@ import (
 	"time"
 
 	firebase "firebase.google.com/go/v4"
+	"github.com/evenyosua18/ego/logger"
 	"google.golang.org/api/option"
 )
 
@@ -15,7 +16,7 @@ type RemoteConfigProvider interface {
 }
 
 // FirebaseRemoteConfig implements RemoteConfigProvider for a generic Firebase URL returning JSON
-type FirebaseRemoteConfig struct{
+type FirebaseRemoteConfig struct {
 	credentials []byte
 }
 
@@ -84,7 +85,7 @@ func AutoRefresh(ctx context.Context, provider RemoteConfigProvider, period time
 	if period <= 0 {
 		return
 	}
-	
+
 	go func() {
 		ticker := time.NewTicker(period)
 		defer ticker.Stop()
@@ -102,6 +103,7 @@ func AutoRefresh(ctx context.Context, provider RemoteConfigProvider, period time
 					continue
 				}
 				if updateFn != nil {
+					logger.Info("remote config updated", logger.Field{"total config", len(values)})
 					updateFn(values)
 				}
 			}

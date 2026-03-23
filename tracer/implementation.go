@@ -64,7 +64,6 @@ func RunSentry(sentryConfig Config) (flush func(flushTime string), err error) {
 }
 
 func GetTracer() Tracer {
-	fmt.Println("Sentry initialized", tracer.(*SentryTracer).isActive)
 	return tracer
 }
 

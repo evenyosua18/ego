@@ -113,9 +113,10 @@ const (
 	DefaultBreakerTimeout             = 30 * time.Second
 	DefaultBreakerConsecutiveFailures = 5
 
-	RemoteConfigProviderName   = "remote_config.provider"
-	RemoteConfigUrl            = "remote_config.url"
-	RemoteConfigRefreshPeriod  = "remote_config.refresh_period"
+	RemoteConfigProviderName  = "remote_config.provider"
+	RemoteConfigUrl           = "remote_config.url"
+	RemoteConfigRefreshPeriod = "remote_config.refresh_period"
+	RemoteConfigCredentials   = "remote_config.credentials"
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
@@ -131,6 +132,7 @@ type (
 		CacheConfig    *Cache
 		BreakerConfig  *Breaker
 		AuthSvcConfig  *AuthSvc
+		RemoteConfig   *RemoteConfig
 	}
 
 	Code struct {
@@ -225,6 +227,13 @@ type (
 		BaseUrl      string
 		ClientId     string
 		ClientSecret string
+	}
+
+	RemoteConfig struct {
+		ProviderName  string
+		Url           string
+		RefreshPeriod time.Duration
+		Credentials   []byte
 	}
 )
 
@@ -323,6 +332,18 @@ func (c *Config) build() {
 		BaseUrl:      c.getOrDefault(AuthSvcBaseUrl, ""),
 		ClientId:     c.getOrDefault(AuthSvcClientId, ""),
 		ClientSecret: c.getOrDefault(AuthSvcClientSecret, ""),
+	}
+
+	// remote config
+	c.RemoteConfig = &RemoteConfig{
+		ProviderName:  c.getOrDefault(RemoteConfigProviderName, ""),
+		Url:           c.getOrDefault(RemoteConfigUrl, ""),
+		RefreshPeriod: c.getOrDefaultDuration(RemoteConfigRefreshPeriod, 0),
+		Credentials:   []byte(c.getOrDefault(RemoteConfigCredentials, "")),
+	}
+
+	if c.RemoteConfig.ProviderName == "" {
+		c.RemoteConfig = nil
 	}
 
 	return

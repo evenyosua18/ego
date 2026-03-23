@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/evenyosua18/ego/auth"
@@ -42,35 +43,14 @@ func (a *app) RunRest() {
 	appConfig.build()
 
 	// initial remote config fetch
-	remoteUrl := config.GetConfig().GetString(RemoteConfigUrl)
-	providerName := config.GetConfig().GetString(RemoteConfigProviderName)
 	var remoteProvider config.RemoteConfigProvider
-
-	applyRemoteConfig := func(values map[string]any) {
-		serviceName := config.GetConfig().GetString(ServiceName)
-		if serviceName == "" {
-			serviceName = DefaultServiceName
-		}
-
-		// If payload is nested by service name, apply only that service's config.
-		if svcConfig, ok := values[serviceName].(map[string]any); ok {
-			config.GetConfig().Merge(svcConfig)
-		} else {
-			// Fallback: apply the whole payload if it isn't nested by service.
-			config.GetConfig().Merge(values)
-		}
-	}
-
-	if remoteUrl != "" && providerName != "" {
-		switch providerName {
+	if appConfig.RemoteConfig != nil {
+		// initiate remote config provider
+		switch appConfig.RemoteConfig.ProviderName {
 		case "firebase":
-			var creds []byte
-			if credStr := config.GetConfig().GetString("feature_flag.credentials"); credStr != "" {
-				creds = []byte(credStr)
-			}
-			remoteProvider = config.NewFirebaseRemoteConfig(creds)
+			remoteProvider = config.NewFirebaseRemoteConfig(appConfig.RemoteConfig.Credentials)
 		default:
-			fmt.Printf("warning: unsupported remote config provider: %s\n", providerName)
+			fmt.Printf("warning: unsupported remote config provider: %s\n", appConfig.RemoteConfig.ProviderName)
 		}
 
 		if remoteProvider != nil {
@@ -80,7 +60,7 @@ func (a *app) RunRest() {
 			} else {
 				applyRemoteConfig(values)
 				// Rebuild appConfig so subsequent setup logic gets the latest overridden values
-				appConfig.build()
+				// appConfig.build()
 			}
 		}
 	}
@@ -189,10 +169,9 @@ func (a *app) RunRest() {
 	bgCtx, cancelBg := context.WithCancel(context.Background())
 	defer cancelBg()
 
-	// init remote config auto refresh
-	if remoteUrl != "" && remoteProvider != nil {
-		period := config.GetConfig().GetDuration(RemoteConfigRefreshPeriod)
-		config.AutoRefresh(bgCtx, remoteProvider, period, applyRemoteConfig)
+	// setup auto refresh for remote config
+	if appConfig.RemoteConfig != nil && remoteProvider != nil {
+		config.AutoRefresh(bgCtx, remoteProvider, appConfig.RemoteConfig.RefreshPeriod, applyRemoteConfig)
 	}
 
 	// init token manager
@@ -234,4 +213,21 @@ func (a *app) RunRest() {
 
 func GetApp() IApp {
 	return &app{}
+}
+
+func applyRemoteConfig(values map[string]any) {
+	serviceName := config.GetConfig().GetString(ServiceName)
+	if serviceName == "" {
+		serviceName = DefaultServiceName
+	}
+
+	serviceName = strings.ReplaceAll(serviceName, "-", "_")
+
+	// If payload is nested by service name, apply only that service's config.
+	if svcConfig, ok := values[serviceName].(map[string]any); ok {
+		config.GetConfig().Merge(svcConfig)
+	} else {
+		// Fallback: apply the whole payload if it isn't nested by service.
+		config.GetConfig().Merge(values)
+	}
 }
