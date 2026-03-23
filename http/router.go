@@ -72,7 +72,7 @@ func NewRouter(cfg RouteConfig) *Router {
 	})
 
 	// set config value (just for local)
-	if config.GetConfig().GetString("service.env") == "dev" {
+	if config.GetConfig().GetString("service.env") == DefaultServiceName {
 		fiberApp.Get("/config/:key", func(c fiber.Ctx) error {
 			return c.JSON(config.GetConfig().Get(c.Params("key")))
 		})

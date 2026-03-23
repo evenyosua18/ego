@@ -1,5 +1,7 @@
 package http
 
+const DefaultServiceName = "local"
+
 // for local context
 type (
 	localRouteRoles struct{}
