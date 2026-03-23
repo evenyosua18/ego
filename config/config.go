@@ -46,6 +46,12 @@ func GetConfig() *Config {
 	return instance
 }
 
+// this part is used specific for feature flag
+// the convention should be flag.[key] in config.toml
+func GetFlag(key string) bool {
+	return GetConfig().GetBool("flag." + key)
+}
+
 func SetTestConfig(injectedValues map[string]any) {
 	mu.Lock()
 	defer mu.Unlock()
