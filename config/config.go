@@ -67,6 +67,14 @@ func SetTestConfig(injectedValues map[string]any) {
 
 // mirroring viper function
 
+func (c *Config) Merge(values map[string]any) error {
+	return c.v.MergeConfigMap(values)
+}
+
+func (c *Config) Set(key string, value any) {
+	c.v.Set(key, value)
+}
+
 func (c *Config) Get(key string) any {
 	return c.v.Get(key)
 }

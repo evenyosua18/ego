@@ -25,21 +25,65 @@ type app struct {
 }
 
 var (
-	osExit           = os.Exit
-	panicFunc        = func(v any) { panic(v) }
-	loadCodesFunc    = code.LoadCodes
-	runSentryFunc    = tracer.RunSentry
-	dbConnectFunc    = sqldb.Connect
-	redisNewFunc     = redis_adapter.NewRedisAdapter
-	authManageFunc   = auth.ManageAccessToken
-	newRouterFunc    = func(cfg http.RouteConfig) http.IHttpRouter { return http.NewRouter(cfg) }
-	signalNotify     = signal.Notify
+	osExit         = os.Exit
+	panicFunc      = func(v any) { panic(v) }
+	loadCodesFunc  = code.LoadCodes
+	runSentryFunc  = tracer.RunSentry
+	dbConnectFunc  = sqldb.Connect
+	redisNewFunc   = redis_adapter.NewRedisAdapter
+	authManageFunc = auth.ManageAccessToken
+	newRouterFunc  = func(cfg http.RouteConfig) http.IHttpRouter { return http.NewRouter(cfg) }
+	signalNotify   = signal.Notify
 )
 
 func (a *app) RunRest() {
-	// init config
+	// init config (local values)
 	appConfig := Config{}
 	appConfig.build()
+
+	// initial remote config fetch
+	remoteUrl := config.GetConfig().GetString(RemoteConfigUrl)
+	providerName := config.GetConfig().GetString(RemoteConfigProviderName)
+	var remoteProvider config.RemoteConfigProvider
+
+	applyRemoteConfig := func(values map[string]any) {
+		serviceName := config.GetConfig().GetString(ServiceName)
+		if serviceName == "" {
+			serviceName = DefaultServiceName
+		}
+
+		// If payload is nested by service name, apply only that service's config.
+		if svcConfig, ok := values[serviceName].(map[string]any); ok {
+			config.GetConfig().Merge(svcConfig)
+		} else {
+			// Fallback: apply the whole payload if it isn't nested by service.
+			config.GetConfig().Merge(values)
+		}
+	}
+
+	if remoteUrl != "" && providerName != "" {
+		switch providerName {
+		case "firebase":
+			var creds []byte
+			if credStr := config.GetConfig().GetString("feature_flag.credentials"); credStr != "" {
+				creds = []byte(credStr)
+			}
+			remoteProvider = config.NewFirebaseRemoteConfig(creds)
+		default:
+			fmt.Printf("warning: unsupported remote config provider: %s\n", providerName)
+		}
+
+		if remoteProvider != nil {
+			values, err := remoteProvider.Fetch(context.Background())
+			if err != nil {
+				fmt.Printf("warning: remote config fetch failed: %v\n", err)
+			} else {
+				applyRemoteConfig(values)
+				// Rebuild appConfig so subsequent setup logic gets the latest overridden values
+				appConfig.build()
+			}
+		}
+	}
 
 	// init breaker config
 	if appConfig.BreakerConfig != nil {
@@ -144,6 +188,12 @@ func (a *app) RunRest() {
 	// init background context
 	bgCtx, cancelBg := context.WithCancel(context.Background())
 	defer cancelBg()
+
+	// init remote config auto refresh
+	if remoteUrl != "" && remoteProvider != nil {
+		period := config.GetConfig().GetDuration(RemoteConfigRefreshPeriod)
+		config.AutoRefresh(bgCtx, remoteProvider, period, applyRemoteConfig)
+	}
 
 	// init token manager
 	if appConfig.AuthSvcConfig.ClientId != "" && appConfig.AuthSvcConfig.ClientSecret != "" {

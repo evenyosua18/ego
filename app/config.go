@@ -112,6 +112,10 @@ const (
 	DefaultBreakerInterval            = 0 * time.Second
 	DefaultBreakerTimeout             = 30 * time.Second
 	DefaultBreakerConsecutiveFailures = 5
+
+	RemoteConfigProviderName   = "remote_config.provider"
+	RemoteConfigUrl            = "remote_config.url"
+	RemoteConfigRefreshPeriod  = "remote_config.refresh_period"
 )
 
 var ErrEmptyDBPassword = fmt.Errorf("db password can't be empty for non local environment")
